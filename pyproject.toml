@@ -1,0 +1,29 @@
+[project]
+name = "nvsim"
+version = "0.0.1"
+description = "NV-diamond magnetometry simulation and ML/Bayesian signal extraction"
+requires-python = ">=3.11"
+dependencies = [
+    "qutip>=5.0",
+    "numpy",
+    "scipy",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+ml = ["torch>=2.3"]
+dev = ["pytest", "ruff", "ipykernel"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: long-running simulation tests"]
+
+[tool.ruff]
+line-length = 100
