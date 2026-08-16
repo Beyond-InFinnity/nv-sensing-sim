@@ -1,7 +1,13 @@
 # nv-sensing-sim
 
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
-signal extraction that beats conventional curve fitting at low SNR.
+signal extraction benchmarked against the Cramér–Rao bound.
+
+**Status: scaffolded, not yet started.** The design documents below define the
+scope; implementation begins after the companion project
+([qec-neural-decoder](https://github.com/Beyond-InFinnity/qec-neural-decoder))
+completes its current phase. No results yet — the roadmap's claims are
+hypotheses, not findings.
 
 ## What this is
 
