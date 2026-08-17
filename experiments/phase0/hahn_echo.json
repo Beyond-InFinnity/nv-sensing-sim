@@ -1,0 +1,4 @@
+{"name": "hahn_echo", "protocol": "hahn_echo",
+ "tau_max_s": 300.0e-6, "n_tau": 60, "t2_s": 150.0e-6,
+ "mode": "static", "sigma_detuning_hz": 1.5e5, "n_samples": 300,
+ "ramsey_comparison": true, "seed": 42}

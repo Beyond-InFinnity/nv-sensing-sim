@@ -1,0 +1,4 @@
+{"name": "odmr_vs_field", "protocol": "odmr",
+ "f_min_hz": 2.72e9, "f_max_hz": 3.02e9, "n_freq": 3001,
+ "b_axial_t": [0.0, 1.0e-3, 2.0e-3, 3.0e-3],
+ "e_hz": 0.0, "contrast": 0.2, "fwhm_hz": 8.0e6, "seed": 0}

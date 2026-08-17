@@ -1,0 +1,3 @@
+{"name": "rabi", "protocol": "rabi",
+ "rabi_hz": [1.0e6, 2.0e6, 4.0e6], "t_max_s": 3.0e-6, "n_t": 1501,
+ "detuning_hz": 0.0, "t1_s": 100.0e-6, "t2_s": 5.0e-6, "seed": 0}
