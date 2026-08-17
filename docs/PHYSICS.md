@@ -35,8 +35,8 @@ Implemented (Phase 1): static-splitting model — each ms=0 → ms=±1 line spli
 into three at f_trans + ms_target·A∥·mI, contrast/3 each. Power broadening
 (cw): FWHM(s) = FWHM₀·√(1+s), contrast(s) = C₀·s/(1+s), with s the
 dimensionless saturation parameter (MW power / saturation power); cf.
-Dréau et al., Phys. Rev. B 84, 195204 (2011) — verify exact figure/equation
-numbers against the paper before citing them in figure captions.
+Dréau et al., Phys. Rev. B 84, 195204 (2011), Fig. 3(a)–(d) and eqs. (10)–(11)
+(verified against the arXiv:1108.0178 full text, 2026-08-17).
 
 ## CW-ODMR model (Phase 0)
 
