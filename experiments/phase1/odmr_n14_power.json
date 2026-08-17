@@ -1,0 +1,10 @@
+{"name": "odmr_n14_power", "kind": "ladder", "vary": "truth.saturation",
+ "values": [0.2, 1.0, 5.0, 20.0],
+ "base": {"protocol": "odmr", "seed": 21,
+   "sweep": {"min": 2.8595e9, "max": 2.8805e9, "n_points": 421},
+   "n_sweeps": 8, "n_shots": 2000,
+   "truth": {"b_nv_t": [0.0, 0.0, 3.0e-4], "contrast": 0.18,
+             "fwhm_hz": 0.35e6, "saturation": 1.0},
+   "timing": {"t_init_s": 0.0, "t_read_s": 1.0e-3, "t_dead_s": 0.0},
+   "readout": {"r_hz": 6.0e7, "contrast": 0.18, "t_read_s": 1.0e-3, "f_pump": 1.0},
+   "drift": {}}}
