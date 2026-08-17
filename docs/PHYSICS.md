@@ -31,6 +31,13 @@ Axial A∥ ≈ −2.16 MHz coupling to the I = 1 nuclear spin → ODMR triplet.
 Model as static splitting first (three sub-ensembles), full tensor-product
 Hilbert space (9-dim) only if needed.
 
+Implemented (Phase 1): static-splitting model — each ms=0 → ms=±1 line splits
+into three at f_trans + ms_target·A∥·mI, contrast/3 each. Power broadening
+(cw): FWHM(s) = FWHM₀·√(1+s), contrast(s) = C₀·s/(1+s), with s the
+dimensionless saturation parameter (MW power / saturation power); cf.
+Dréau et al., Phys. Rev. B 84, 195204 (2011) — verify exact figure/equation
+numbers against the paper before citing them in figure captions.
+
 ## CW-ODMR model (Phase 0)
 
 Rate-equation level: fluorescence S(f) = 1 − Σᵢ C·L(f − fᵢ), one Lorentzian
