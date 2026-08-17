@@ -78,6 +78,10 @@ Lindblad operators on the spin-1 system:
   π/2 about −x → bright fringe at τ=0, P₀ = ½(1 + cos 2πδτ · envelope).
 - T2 (echo): residual dephasing under echo; decay envelope exp[−(t/T2)^n],
   n from the assumed bath (document choice per experiment).
+  Phase 0 implements n = 1 (Markovian Lindblad dephasing at rate 1/T2):
+  P₀ = ½(1 + exp(−2τ/T2)) for the π/2ₓ–τ–πₓ–τ–π/2ₓ sequence. Static
+  detunings of any σ are exactly refocused (unit-tested). Stretched
+  exponentials (n ≠ 1) arrive with Phase 1's noise modeling.
 
 Typical values to default to (bulk, ppb-grade diamond): T1 ~ ms,
 T2* ~ 1–5 µs, T2 ~ 100–500 µs. Cite Barry et al., Rev. Mod. Phys. 92, 015004

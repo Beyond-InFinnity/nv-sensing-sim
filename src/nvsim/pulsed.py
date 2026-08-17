@@ -85,6 +85,46 @@ def ramsey(taus_s, detuning_hz, t2star_s=None, mode="lindblad",
     raise ValueError(f"unknown mode: {mode}")
 
 
+def _echo_single(taus_s, detuning_hz, t2_s):
+    """pi/2(x) - tau - pi(x) - tau - pi/2(x) for each tau (separate evolutions).
+
+    With all-x pulses the static-detuning phase refocuses exactly and the
+    sequence returns |0> (up to global phase): P0 = 1 for any static delta.
+    """
+    out = np.empty(len(taus_s))
+    c_ops = _collapse_ops(None, t2_s)
+    psi0 = _rx(np.pi / 2) * qutip.basis(2, 0)
+    h = _free_h(detuning_hz)
+    pi_pulse, half = _rx(np.pi), _rx(np.pi / 2)
+    for i, tau in enumerate(taus_s):
+        tlist = [0.0, float(tau)]
+        rho = qutip.mesolve(h, psi0, tlist, c_ops=c_ops,
+                            options=_SOLVER_OPTS).states[-1]
+        rho = pi_pulse * rho * pi_pulse.dag() if rho.isoper else pi_pulse * rho
+        rho = qutip.mesolve(h, rho, tlist, c_ops=c_ops,
+                            options=_SOLVER_OPTS).states[-1]
+        state = half * rho * half.dag() if rho.isoper else half * rho
+        out[i] = qutip.expect(_P0, state)
+    return out
+
+
+def hahn_echo(taus_s, static_detuning_hz=0.0, t2_s=None, mode="lindblad",
+              sigma_detuning_hz=None, n_samples=400, seed=None):
+    """P(ms=0) after pi/2 - tau - pi - tau - pi/2 (all x-axis pulses) vs tau.
+
+    Total free-evolution time is 2*tau. mode='static' averages over Gaussian
+    static detunings (std sigma_detuning_hz), all exactly refocused.
+    """
+    taus = np.asarray(taus_s, dtype=float)
+    if mode == "lindblad":
+        return _echo_single(taus, static_detuning_hz, t2_s)
+    if mode == "static":
+        rng = np.random.default_rng(seed)
+        deltas = static_detuning_hz + sigma_detuning_hz * rng.standard_normal(n_samples)
+        return np.mean([_echo_single(taus, d, t2_s) for d in deltas], axis=0)
+    raise ValueError(f"unknown mode: {mode}")
+
+
 def rabi(rabi_hz, times_s, detuning_hz=0.0, t1_s=None, t2_s=None):
     """P(ms=0) under continuous drive, starting from |ms=0>."""
     result = qutip.mesolve(

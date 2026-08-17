@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from nvsim.pulsed import rabi, ramsey, t2star_from_sigma
+from nvsim.pulsed import hahn_echo, rabi, ramsey, t2star_from_sigma
 
 
 def test_rabi_frequency_equals_drive_amplitude():
@@ -78,3 +78,26 @@ def test_ramsey_static_sampling_gives_gaussian_envelope():
     np.testing.assert_allclose(
         p0, 0.5 * (1 + np.exp(-((taus / t2s) ** 2))), atol=0.02
     )
+
+
+def test_echo_removes_static_detuning():
+    taus = np.linspace(0, 5e-6, 50)
+    for delta in (0.0, 1e6, 3.7e6):
+        p0 = hahn_echo(taus, static_detuning_hz=delta)
+        np.testing.assert_allclose(p0, 1.0, atol=1e-8)
+
+
+def test_echo_removes_inhomogeneous_broadening():
+    sigma = 200e3
+    taus = np.linspace(1e-8, 3e-6, 30)
+    echo = hahn_echo(taus, mode="static", sigma_detuning_hz=sigma,
+                     n_samples=500, seed=3)
+    np.testing.assert_allclose(echo, 1.0, atol=1e-8)
+
+
+def test_echo_decays_with_t2_over_total_time():
+    t2 = 100e-6
+    taus = np.linspace(0, 150e-6, 40)
+    p0 = hahn_echo(taus, t2_s=t2)
+    # envelope exp(-(2 tau)/T2): P0 = (1 + exp(-2 tau/T2))/2
+    np.testing.assert_allclose(p0, 0.5 * (1 + np.exp(-2 * taus / t2)), atol=1e-3)
