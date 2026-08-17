@@ -31,6 +31,14 @@ Axial A∥ ≈ −2.16 MHz coupling to the I = 1 nuclear spin → ODMR triplet.
 Model as static splitting first (three sub-ensembles), full tensor-product
 Hilbert space (9-dim) only if needed.
 
+## CW-ODMR model (Phase 0)
+
+Rate-equation level: fluorescence S(f) = 1 − Σᵢ C·L(f − fᵢ), one Lorentzian
+L (FWHM Γ) per ground-state eigen-transition fᵢ from the exact Hamiltonian.
+Equal contrast C per transition (unpolarized MW, both ΔmS = ±1 allowed).
+Linewidth and contrast are phenomenological inputs; power broadening and
+hyperfine structure enter in Phase 1.
+
 ## Optical / readout model
 
 We do NOT simulate the full optical cycle. Readout is phenomenological:
