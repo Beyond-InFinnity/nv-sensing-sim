@@ -17,6 +17,18 @@ a noise model that flatters the estimator is worthless.
 Phase 0 (physics core) — not started. See docs/ROADMAP.md. Update this line
 when a phase completes.
 
+## Orchestration (multi-machine, multi-session)
+
+Rules/protocols live in the PRIVATE repo `homelab-orchestration`
+(`~/Documents/projects/homelab-orchestration` on the server;
+`~/projects/homelab-orchestration` on the workstation). Read its RULES.md
+before launching anything remote; append job boundaries to LEDGER.md; live
+state via `scripts/status.sh`. GPU ownership: qec-neural-decoder owns the
+RTX 5050 (torch cuda:1); **this project may use the RTX 3070 (torch cuda:0)
+in Phase 2+** — update MACHINES.md when claiming it. Phases 0–1 here are
+CPU-only by design and can run on either machine. One Claude session per
+repo; cross-session handoff via this status section + the ledger.
+
 ## Hardware context
 
 Physics simulation is trivially cheap (3–9 dim Hilbert spaces) — runs
