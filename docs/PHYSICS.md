@@ -16,6 +16,15 @@ H/h = D·Sz² + E·(Sx² − Sy²) + (γe/2π)·(Bx·Sx + By·Sy + Bz·Sz)
 - Four NV orientations along the ⟨111⟩ diamond axes; lab-frame B projects
   differently onto each. `hamiltonian.py` owns the frame transforms.
 
+### Implementation conventions (Phase 0)
+
+- Transition frequencies are computed as eigenvalue differences from the
+  eigenstate with maximum |⟨ms=0|ψ⟩|²; valid while γB ≪ D so the ms=0
+  character is well defined.
+- NV frame per orientation: z along the ⟨111⟩ axis, x = ẑ_lab × z (normalized),
+  y = z × x. The in-plane x choice is arbitrary and physically irrelevant for
+  |B⊥|-dependent quantities; E-term anisotropy would pin it (not needed yet).
+
 ## ¹⁴N hyperfine (Phase 1+)
 
 Axial A∥ ≈ −2.16 MHz coupling to the I = 1 nuclear spin → ODMR triplet.
