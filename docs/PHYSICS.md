@@ -101,6 +101,22 @@ Typical values to default to (bulk, ppb-grade diamond): T1 ~ ms,
 T2* ~ 1–5 µs, T2 ~ 100–500 µs. Cite Barry et al., Rev. Mod. Phys. 92, 015004
 (2020) for parameter ranges.
 
+## Drift models (Phase 1)
+
+Wall-clock processes composed into records (`drift.py`), each traceable to a
+mechanism:
+- Laser/MW power: relative multiplicative drift, Ornstein–Uhlenbeck
+  (correlation time ~seconds–minutes) or linear; scales detected rate R
+  (laser) or Rabi amplitude Ω (MW, amplitude ∝ √power — configured directly
+  as amplitude drift).
+- Temperature → D: linear or OU temperature trace T(t), D(t) = D₀ − 74 kHz/K
+  × (T − T₀).
+- Magnetic background: 1/f^α synthesis (α = 1 default), zero-mean, scaled to
+  a target rms in tesla; enters as detuning γ·δB_z(t).
+OU uses the exact discretization x_{k+1} = x_k·e^{−Δt/τ} + σ√(1−e^{−2Δt/τ})·ξ.
+1/f is synthesized spectrally on a uniform grid over the record and
+interpolated; DC bin zeroed.
+
 ## Sensitivity accounting
 
 DC sensitivity η ≈ (1/(γ·C·√(R·t_read))) · (√(t_total)/ (dS/dB slope term)) —
