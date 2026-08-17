@@ -44,6 +44,19 @@ def test_lindblad_preserves_trace_and_damps_rabi():
     assert late_amp == pytest.approx(0.35, abs=0.08)
 
 
+def test_lindblad_evolution_preserves_trace():
+    import qutip
+
+    from nvsim.pulsed import _SOLVER_OPTS, _collapse_ops, _drive_h
+
+    result = qutip.mesolve(
+        _drive_h(1e6, 0.5e6), qutip.basis(2, 0), np.linspace(0, 10e-6, 101),
+        c_ops=_collapse_ops(20e-6, 5e-6), options=_SOLVER_OPTS,
+    )
+    traces = np.array([rho.tr() for rho in result.states])
+    np.testing.assert_allclose(traces, 1.0, atol=1e-9)
+
+
 def _fringe_freq(taus, p0):
     p = p0 - p0.mean()
     spec = np.abs(np.fft.rfft(p))

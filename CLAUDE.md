@@ -14,8 +14,9 @@ a noise model that flatters the estimator is worthless.
 
 ## Current status
 
-Phase 0 (physics core) — not started. See docs/ROADMAP.md. Update this line
-when a phase completes.
+Phase 0 (physics core) — complete (2026-08-17). 22 unit tests green; validation
+figures in docs/figures/. Phase 1 not started — awaiting Connor's go-ahead.
+See docs/ROADMAP.md. Update this line when a phase completes.
 
 ## Orchestration (multi-machine, multi-session)
 

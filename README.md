@@ -3,11 +3,12 @@
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
 signal extraction benchmarked against the Cramér–Rao bound.
 
-**Status: scaffolded, not yet started.** The design documents below define the
-scope; implementation begins after the companion project
-([qec-neural-decoder](https://github.com/Beyond-InFinnity/qec-neural-decoder))
-completes its current phase. No results yet — the roadmap's claims are
-hypotheses, not findings.
+**Status: Phase 0 (physics core) complete.** Spin-1 ground-state Hamiltonian,
+CW-ODMR, and pulsed Rabi/Ramsey/Hahn-echo simulations, with every textbook
+invariant unit-tested (22 tests) and validation figures in `docs/figures/`
+(compared against Barry et al., Rev. Mod. Phys. 92, 015004 (2020)). Phases 1–3
+(realistic noise, estimators, adaptive sensing) not started — the roadmap's
+claims there are hypotheses, not findings.
 
 ## What this is
 

@@ -7,14 +7,14 @@ Each phase has a checkable exit criterion; results backing it live in
 
 Goal: a trustworthy NV ground-state spin model.
 
-- [ ] Spin-1 Hamiltonian: zero-field splitting D = 2.87 GHz, strain E, Zeeman
+- [x] Spin-1 Hamiltonian: zero-field splitting D = 2.87 GHz, strain E, Zeeman
       term for arbitrary B-field orientation; the four NV crystallographic
       orientations.
-- [ ] CW-ODMR spectrum simulation (rate-equation or steady-state Lindblad
+- [x] CW-ODMR spectrum simulation (rate-equation or steady-state Lindblad
       level): two dips at zero strain/field, splitting linear in axial B.
-- [ ] Pulsed protocols via time evolution: Rabi oscillations, Ramsey fringes,
+- [x] Pulsed protocols via time evolution: Rabi oscillations, Ramsey fringes,
       Hahn echo, with T1/T2* / T2 as Lindblad dephasing/relaxation rates.
-- [ ] Unit tests for all textbook behaviors (splittings, fringe frequencies,
+- [x] Unit tests for all textbook behaviors (splittings, fringe frequencies,
       echo decay envelopes).
 
 **Exit:** simulated ODMR/Rabi/Ramsey/echo figures that match textbook/review
