@@ -49,6 +49,13 @@ We do NOT simulate the full optical cycle. Readout is phenomenological:
   never additive Gaussian.
 - Optical pumping = state reset to ms=0 with fidelity f_pump.
 
+Implemented (Phase 1, `readout.py`): mean counts per shot
+λ(p₀) = R·t_read·[f_pump·(1 − C(1−p₀)) + (1−f_pump)·(1 − 2C/3)],
+where R is the *detected* ms=0 photon rate (collection efficiency folded in),
+C the fluorescence contrast, p₀ = P(ms=0) at readout. The unpumped fraction
+is taken as unpolarized (1/3 per ms level) and coherence-free — a constant
+background. Recorded counts over n shots are a single Poisson(n·λ) draw.
+
 ## Pulsed two-level reduction (Phase 0)
 
 Pulsed protocols drive one transition (|ms=0⟩ ↔ |ms=−1⟩) with the other far
