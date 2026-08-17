@@ -49,6 +49,22 @@ We do NOT simulate the full optical cycle. Readout is phenomenological:
   never additive Gaussian.
 - Optical pumping = state reset to ms=0 with fidelity f_pump.
 
+## Pulsed two-level reduction (Phase 0)
+
+Pulsed protocols drive one transition (|ms=0⟩ ↔ |ms=−1⟩) with the other far
+detuned (2γBz ≫ Ω), so the dynamics reduce to a two-level system in the frame
+rotating at the MW frequency, under the RWA:
+
+H/h = −δ·|1⟩⟨1| + (Ω_R/2)·(|0⟩⟨1| + |1⟩⟨0|),  δ = f_MW − f_transition.
+
+- Pulses are ideal (instantaneous rotations); finite-pulse-width effects are
+  out of scope until something needs them (see approximations ledger).
+- Lindblad: T1 as symmetric jump ops √(1/2T1)·σ∓ (infinite-temperature bath —
+  fine since ħω ≪ kT at room temperature); pure dephasing √(γφ/2)·σz with
+  γφ = 1/T2 − 1/(2T1). Requires T2 ≤ 2T1.
+- On resonance P₀(t) = cos²(πΩ_R t); detuned, generalized Rabi
+  Ω' = √(Ω_R² + δ²) with contrast Ω_R²/Ω'².
+
 ## Decoherence
 
 Lindblad operators on the spin-1 system:
@@ -78,3 +94,5 @@ assumed photon budget.
 | Rotating wave approximation for MW drive | pulsed sims | Rabi frequencies approach detunings (~100 MHz) |
 | Static hyperfine (no nuclear dynamics) | ODMR lineshape | simulating nuclear-spin-assisted protocols |
 | Single NV orientation unless stated | most sims | ensemble/vector magnetometry |
+| Ideal (delta-function) MW pulses | pulsed sims | pulse durations comparable to 1/detunings or to T2* |
+| Two-level reduction of the driven transition | pulsed sims | Ω comparable to the 2γBz splitting, or degenerate transitions at B≈0 |
