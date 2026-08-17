@@ -72,6 +72,10 @@ Lindblad operators on the spin-1 system:
 - T2* (Ramsey) via pure dephasing rate; inhomogeneous broadening alternatively
   modeled by sampling static detunings across realizations (more physical for
   ensemble/slow bath — prefer this for Ramsey decay shape).
+  Implemented as `ramsey(mode=...)`: `"lindblad"` gives envelope exp(−τ/T2*);
+  `"static"` averages Gaussian static detunings (std σ) giving envelope
+  exp(−(τ/T2*)²) with T2* = √2/(2πσ). Pulse convention: π/2 about +x, second
+  π/2 about −x → bright fringe at τ=0, P₀ = ½(1 + cos 2πδτ · envelope).
 - T2 (echo): residual dephasing under echo; decay envelope exp[−(t/T2)^n],
   n from the assumed bath (document choice per experiment).
 

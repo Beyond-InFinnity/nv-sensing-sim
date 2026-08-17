@@ -45,6 +45,46 @@ def _rx(theta):
     return (-1j * theta / 2 * (_SM + _SM.dag())).expm()
 
 
+def t2star_from_sigma(sigma_detuning_hz):
+    """T2* of the Gaussian free-induction envelope exp(-(tau/T2*)^2) produced by
+    Gaussian static detunings of std sigma (Hz): T2* = sqrt(2)/(2 pi sigma)."""
+    return np.sqrt(2) / (2 * np.pi * sigma_detuning_hz)
+
+
+def _ramsey_single(taus_s, detuning_hz, t2star_s):
+    psi0 = _rx(np.pi / 2) * qutip.basis(2, 0)
+    result = qutip.mesolve(
+        _free_h(detuning_hz), psi0, taus_s,
+        c_ops=_collapse_ops(None, t2star_s), options=_SOLVER_OPTS,
+    )
+    out = np.empty(len(taus_s))
+    # second pulse about -x: bright fringe at tau=0, P0 = (1 + cos(2 pi delta tau))/2
+    half = _rx(-np.pi / 2)
+    for i, rho in enumerate(result.states):
+        state = half * rho * half.dag() if rho.isoper else half * rho
+        out[i] = qutip.expect(_P0, state)
+    return out
+
+
+def ramsey(taus_s, detuning_hz, t2star_s=None, mode="lindblad",
+           sigma_detuning_hz=None, n_samples=400, seed=None):
+    """P(ms=0) after pi/2 - tau - pi/2 vs free-evolution time tau.
+
+    mode='lindblad': Markovian dephasing at rate 1/T2* (exponential envelope).
+    mode='static': average over Gaussian static detunings of std
+    sigma_detuning_hz around detuning_hz (Gaussian envelope; the physical
+    choice for slow baths, T2* = t2star_from_sigma(sigma)).
+    """
+    taus = np.asarray(taus_s, dtype=float)
+    if mode == "lindblad":
+        return _ramsey_single(taus, detuning_hz, t2star_s)
+    if mode == "static":
+        rng = np.random.default_rng(seed)
+        deltas = detuning_hz + sigma_detuning_hz * rng.standard_normal(n_samples)
+        return np.mean([_ramsey_single(taus, d, t2star_s) for d in deltas], axis=0)
+    raise ValueError(f"unknown mode: {mode}")
+
+
 def rabi(rabi_hz, times_s, detuning_hz=0.0, t1_s=None, t2_s=None):
     """P(ms=0) under continuous drive, starting from |ms=0>."""
     result = qutip.mesolve(
