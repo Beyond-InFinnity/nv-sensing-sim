@@ -26,14 +26,14 @@ number.
 Goal: a synthetic data generator whose output looks like the lab, not like a
 clean curve plus white noise.
 
-- [ ] Photon shot noise from an explicit photon budget (counts/measurement,
+- [x] Photon shot noise from an explicit photon budget (counts/measurement,
       contrast ~1–30%), not additive Gaussian.
-- [ ] ¹⁴N hyperfine triplet in ODMR lineshapes; power broadening.
-- [ ] Slow drifts: laser/MW power drift, thermal drift of D (−74 kHz/K),
+- [x] ¹⁴N hyperfine triplet in ODMR lineshapes; power broadening.
+- [x] Slow drifts: laser/MW power drift, thermal drift of D (−74 kHz/K),
       1/f-style B-field background.
-- [ ] Config-driven "virtual experiment" API: protocol + true parameters +
+- [x] Config-driven "virtual experiment" API: protocol + true parameters +
       noise config → measurement record dataset.
-- [ ] Validation figure set: side-by-side with published experimental traces.
+- [x] Validation figure set: side-by-side with published experimental traces.
 
 **Exit:** generator produces datasets across an SNR range with documented,
 physically-motivated noise; every knob traceable to a physical mechanism.

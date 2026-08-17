@@ -3,12 +3,15 @@
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
 signal extraction benchmarked against the Cramér–Rao bound.
 
-**Status: Phase 0 (physics core) complete.** Spin-1 ground-state Hamiltonian,
-CW-ODMR, and pulsed Rabi/Ramsey/Hahn-echo simulations, with every textbook
-invariant unit-tested (22 tests) and validation figures in `docs/figures/`
-(compared against Barry et al., Rev. Mod. Phys. 92, 015004 (2020)). Phases 1–3
-(realistic noise, estimators, adaptive sensing) not started — the roadmap's
-claims there are hypotheses, not findings.
+**Status: Phases 0–1 complete.** Phase 0: spin-1 ground-state Hamiltonian,
+CW-ODMR, and pulsed Rabi/Ramsey/Hahn-echo simulations, every textbook invariant
+unit-tested against Barry et al., Rev. Mod. Phys. 92, 015004 (2020). Phase 1:
+config-driven virtual-experiment generator — Poisson counts from an explicit
+photon budget, ¹⁴N hyperfine + power broadening (Dréau et al., PRB 84, 195204
+(2011)), and 1/f / OU / thermal drifts on a wall-clock axis, with paired RNG
+streams for estimator comparisons. 41 tests; figures in `docs/figures/`.
+Phases 2–3 (estimators, adaptive sensing) not started — the roadmap's claims
+there are hypotheses, not findings.
 
 ## What this is
 

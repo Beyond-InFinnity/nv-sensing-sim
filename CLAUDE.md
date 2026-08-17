@@ -14,8 +14,10 @@ a noise model that flatters the estimator is worthless.
 
 ## Current status
 
-Phase 0 (physics core) — complete (2026-08-17). 22 unit tests green; validation
-figures in docs/figures/. Phase 1 not started — awaiting Connor's go-ahead.
+Phase 1 (realistic measurement records) — complete (2026-08-17); Phase 0 also
+complete. 41 unit tests green; validation figures in docs/figures/. Phase 2
+(estimators) not started — awaiting Connor's go-ahead; grid-vs-SMC Bayesian
+decision and RTX 3070 claim (MACHINES.md) happen there.
 See docs/ROADMAP.md. Update this line when a phase completes.
 
 ## Orchestration (multi-machine, multi-session)
