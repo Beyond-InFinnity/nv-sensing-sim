@@ -3,21 +3,15 @@
 config + seed + git SHA. Usage: run_phase0.py CONFIG [--out-dir DIR]"""
 import argparse
 import json
-import subprocess
 from pathlib import Path
 
 import numpy as np
 
 from nvsim.odmr import odmr_spectrum
+from nvsim.provenance import git_sha
 from nvsim.pulsed import hahn_echo, rabi, ramsey, t2star_from_sigma
 
 REPO = Path(__file__).resolve().parent.parent
-
-
-def git_sha():
-    return subprocess.run(
-        ["git", "rev-parse", "HEAD"], capture_output=True, text=True, cwd=REPO
-    ).stdout.strip()
 
 
 def run_odmr(c):

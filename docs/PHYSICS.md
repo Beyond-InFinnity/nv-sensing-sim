@@ -124,6 +124,18 @@ implement the standard shot-noise-limited formulas from Barry et al. §III and
 test against their worked examples. All sensitivity numbers must state the
 assumed photon budget.
 
+## Virtual experiment timing model (Phase 1)
+
+A record is n_sweeps sequential sweeps over n_points settings; each point is
+n_shots back-to-back shots of duration t_init + t_manip + t_read + t_dead
+(t_manip = drive time / τ / 2τ per protocol, 0 for cw-ODMR). Drift processes
+are sampled at each point's wall-clock timestamp. Drift mapping: laser power →
+detected rate multiplier; MW amplitude → Ω multiplier (Rabi); temperature →
+D via −74 kHz/K → detuning; B background → detuning via γ (pulsed) / line
+positions (ODMR). Per-point counts are one Poisson(n_shots·λ) draw; drift is
+treated as constant within a point (τ_drift ≫ point duration assumed —
+approximations ledger).
+
 ## Approximations ledger
 
 | Approximation | Where | Revisit when |
@@ -134,3 +146,4 @@ assumed photon budget.
 | Single NV orientation unless stated | most sims | ensemble/vector magnetometry |
 | Ideal (delta-function) MW pulses | pulsed sims | pulse durations comparable to 1/detunings or to T2* |
 | Two-level reduction of the driven transition | pulsed sims | Ω comparable to the 2γBz splitting, or degenerate transitions at B≈0 |
+| Drift frozen within a measurement point | experiment.py | drift correlation times approach the per-point duration |
