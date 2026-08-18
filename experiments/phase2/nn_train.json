@@ -1,4 +1,4 @@
-{"seed": 301, "epochs": 40, "steps_per_epoch": 250, "batch": 256,
+{"seed": 301, "epochs": 60, "steps_per_epoch": 250, "batch": 256,
  "lr": 1.0e-3, "warmup_steps": 500, "grad_clip": 1.0,
  "taus": {"min": 0.0, "max": 5.0e-6, "n_points": 150},
  "readout": {"r_hz": 6.0e7, "contrast": 0.25, "t_read_s": 0.4e-6, "f_pump": 0.95},

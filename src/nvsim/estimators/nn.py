@@ -33,11 +33,11 @@ class RamseyNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv = nn.Sequential(
-            nn.Conv1d(2, 32, 7, padding=3), nn.ReLU(),
-            nn.Conv1d(32, 32, 7, stride=2, padding=3), nn.ReLU(),
-            nn.Conv1d(32, 32, 7, stride=2, padding=3), nn.ReLU(),
+            nn.Conv1d(2, 64, 7, padding=3), nn.ReLU(),
+            nn.Conv1d(64, 64, 7, stride=2, padding=3), nn.ReLU(),
+            nn.Conv1d(64, 64, 7, stride=2, padding=3), nn.ReLU(),
             nn.AdaptiveAvgPool1d(1))
-        self.head = nn.Sequential(nn.Linear(33, 64), nn.ReLU(), nn.Linear(64, 2))
+        self.head = nn.Sequential(nn.Linear(65, 64), nn.ReLU(), nn.Linear(64, 2))
 
     def forward(self, x, aux):
         z = self.conv(x).squeeze(-1)

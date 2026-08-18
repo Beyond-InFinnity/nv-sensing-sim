@@ -24,8 +24,14 @@ def main():
     dev = torch.device(args.device)
     net = RamseyNet().to(dev)
     opt = torch.optim.Adam(net.parameters(), lr=cfg["lr"])
-    sched = torch.optim.lr_scheduler.LinearLR(
-        opt, start_factor=1e-2, total_iters=cfg["warmup_steps"])
+    total_steps = cfg["epochs"] * cfg["steps_per_epoch"]
+    sched = torch.optim.lr_scheduler.SequentialLR(
+        opt,
+        [torch.optim.lr_scheduler.LinearLR(
+            opt, start_factor=1e-2, total_iters=cfg["warmup_steps"]),
+         torch.optim.lr_scheduler.CosineAnnealingLR(
+            opt, T_max=total_steps - cfg["warmup_steps"])],
+        milestones=[cfg["warmup_steps"]])
     for epoch in range(cfg["epochs"]):
         for _ in range(cfg["steps_per_epoch"]):
             x, aux, y = make_batch(cfg, cfg["batch"], rng)
