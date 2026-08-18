@@ -144,6 +144,16 @@ positions (ODMR). Per-point counts are one Poisson(n_shots·λ) draw; drift is
 treated as constant within a point (τ_drift ≫ point duration assumed —
 approximations ledger).
 
+## Adaptive Ramsey (Phase 3)
+
+Sequential estimation of δ with batches of n_b shots at chosen τ; posterior
+on a 600-point δ grid, exact Poisson updates. T2* is known and fixed in the
+loop (single-parameter tracking) — both adaptive and fixed schedules get the
+same knowledge. Wall-clock cost per shot: t_init + τ + t_read + t_dead.
+Decision rule: minimize expected posterior variance (A-optimal), with the
+batch count distribution approximated as N(nλ, nλ) inside the lookahead only
+(valid for nλ ≳ 100); posterior updates stay exact-Poisson.
+
 ## Approximations ledger
 
 | Approximation | Where | Revisit when |
