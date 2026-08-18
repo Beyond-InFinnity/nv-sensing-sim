@@ -59,7 +59,10 @@ anywhere. NN estimator training (Phase 2) targets the RTX 3070 / RTX 5050
   Phase 1 requires realistic ODMR lineshapes. Excited-state / optical dynamics
   modeled phenomenologically (contrast + photon budget), not as a full 7-level
   master equation, until something needs it.
-- (pending) Bayesian inference machinery: grid vs SMC — decide in Phase 2.
+- Bayesian inference machinery: grid posterior (400×60 over δ×T2*, exact
+  Poisson likelihood, adaptive zoom when the posterior is narrower than ~5
+  cells) — decided 2026-08-18. SMC revisited only if Phase 3 adaptive needs
+  sequential updates.
 
 ## Commands
 
