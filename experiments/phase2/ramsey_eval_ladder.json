@@ -1,0 +1,9 @@
+{"name": "ramsey_eval_ladder", "kind": "ladder", "vary": "n_shots",
+ "values": [20, 66, 200, 660, 2000, 6600, 20000],
+ "base": {"protocol": "ramsey", "seed": 202,
+   "sweep": {"min": 0.0, "max": 5.0e-6, "n_points": 150},
+   "n_sweeps": 200,
+   "truth": {"detuning_hz": 2.0e6, "t2star_s": 1.5e-6},
+   "timing": {"t_init_s": 2.0e-6, "t_read_s": 0.4e-6, "t_dead_s": 1.0e-6},
+   "readout": {"r_hz": 6.0e7, "contrast": 0.25, "t_read_s": 0.4e-6, "f_pump": 0.95},
+   "drift": {}}}
