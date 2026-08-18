@@ -122,3 +122,30 @@ def make_schedule(kind, cfg):
             t *= 2
         return lambda step, post: float(ladder[step % len(ladder)])
     raise ValueError(f"unknown schedule: {kind}")
+
+
+def simulate_run(true_delta_hz, kind, cfg, rng):
+    """One sequential experiment under a schedule; honest wall-clock cost."""
+    from .model import expected_counts
+
+    post = DeltaPosterior(tuple(cfg["delta_range_hz"]),
+                          t2star_s=cfg["t2star_s"],
+                          readout_cfg=cfg["readout"])
+    schedule = make_schedule(kind, cfg)
+    t = cfg["timing"]
+    n_b = cfg["n_shots_per_batch"]
+    out = {"kind": kind, "wall_time_s": [], "sigma_hz": [],
+           "abs_err_hz": [], "tau_s": []}
+    elapsed, step = 0.0, 0
+    while elapsed < cfg["time_budget_s"]:
+        tau = schedule(step, post)
+        lam = expected_counts([tau], true_delta_hz, cfg["t2star_s"],
+                              cfg["readout"], n_b)[0]
+        post.update(rng.poisson(lam), tau, n_b)
+        elapsed += n_b * (t["t_init_s"] + tau + t["t_read_s"] + t["t_dead_s"])
+        step += 1
+        out["wall_time_s"].append(elapsed)
+        out["sigma_hz"].append(post.sigma())
+        out["abs_err_hz"].append(abs(post.mean() - true_delta_hz))
+        out["tau_s"].append(tau)
+    return out

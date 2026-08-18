@@ -79,3 +79,37 @@ def test_fixed_schedules_cycle_and_are_posterior_blind():
     exp = make_schedule("exp_ladder", cfg)
     ladder = [exp(i, None) for i in range(6)]
     assert ladder[1] / ladder[0] == pytest.approx(2.0)
+
+
+from nvsim.estimators.adaptive import simulate_run  # noqa: E402
+
+CFG = {"seed": 1, "n_shots_per_batch": 100, "time_budget_s": 0.02,
+       "delta_range_hz": [0.3e6, 3.7e6], "t2star_s": 1.5e-6,
+       "tau_min_s": 0.05e-6, "tau_max_s": 4.5e-6, "n_sweep_points": 12,
+       "timing": {"t_init_s": 2.0e-6, "t_read_s": 0.4e-6, "t_dead_s": 1.0e-6},
+       "readout": READOUT}
+
+
+def test_simulate_run_time_accounting_and_shrinkage():
+    rng = np.random.default_rng(3)
+    out = simulate_run(2.1e6, "linear_sweep", CFG, rng)
+    times = np.array(out["wall_time_s"])
+    taus = np.array(out["tau_s"])
+    per_shot = 2.0e-6 + taus + 0.4e-6 + 1.0e-6
+    np.testing.assert_allclose(np.diff(times), (100 * per_shot)[1:], rtol=1e-12)
+    assert times[-1] <= 0.02 + 100 * (2.0e-6 + 4.5e-6 + 1.4e-6)
+    assert out["sigma_hz"][-1] < out["sigma_hz"][0]
+
+
+def test_adaptive_beats_fixed_tau_on_time_to_target():
+    """The headline claim, as a smoke-scale test (generous margin, one seed)."""
+    target = 20e3
+    t_reach = {}
+    for kind in ("adaptive", "fixed_tau"):
+        rng = np.random.default_rng(7)
+        out = simulate_run(2.6e6, kind, dict(CFG, time_budget_s=0.05), rng)
+        sig = np.array(out["sigma_hz"])
+        t = np.array(out["wall_time_s"])
+        hit = np.nonzero(sig < target)[0]
+        t_reach[kind] = t[hit[0]] if len(hit) else np.inf
+    assert t_reach["adaptive"] < t_reach["fixed_tau"]
