@@ -3,15 +3,24 @@
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
 signal extraction benchmarked against the Cramér–Rao bound.
 
-**Status: Phases 0–1 complete.** Phase 0: spin-1 ground-state Hamiltonian,
+**Status: Phases 0–2 complete.** Phase 2 headline: on identical Poisson
+Ramsey records, weighted least squares and a Bayesian grid posterior both
+reach 0.94–1.09× the Cramér–Rao bound at every photon budget tested
+(20–20 000 shots/point), i.e. classical fitting is already near-optimal when
+the model is well-specified; a small 1D-CNN reaches only 0.2–0.4× CRB but
+degrades far more gracefully under model misspecification (1/f field drift:
+Bayes loses 2.9×, NN 1.4×). See `docs/figures/phase2_rmse_vs_crb.png`.
+Earlier phases: Phase 0: spin-1 ground-state Hamiltonian,
 CW-ODMR, and pulsed Rabi/Ramsey/Hahn-echo simulations, every textbook invariant
 unit-tested against Barry et al., Rev. Mod. Phys. 92, 015004 (2020). Phase 1:
 config-driven virtual-experiment generator — Poisson counts from an explicit
 photon budget, ¹⁴N hyperfine + power broadening (Dréau et al., PRB 84, 195204
 (2011)), and 1/f / OU / thermal drifts on a wall-clock axis, with paired RNG
-streams for estimator comparisons. 41 tests; figures in `docs/figures/`.
-Phases 2–3 (estimators, adaptive sensing) not started — the roadmap's claims
-there are hypotheses, not findings.
+streams for estimator comparisons. 59 tests across all phases; figures in
+`docs/figures/`. Phase 3 (adaptive sensing) not started — the roadmap's
+claims there are hypotheses, not findings. Datasets (.npz) are gitignored by
+design; each embeds config + seed + git SHA and regenerates deterministically
+via `scripts/run_phase1.py <config>`.
 
 ## What this is
 

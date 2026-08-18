@@ -14,10 +14,10 @@ a noise model that flatters the estimator is worthless.
 
 ## Current status
 
-Phase 1 (realistic measurement records) — complete (2026-08-17); Phase 0 also
-complete. 41 unit tests green; validation figures in docs/figures/. Phase 2
-(estimators) not started — awaiting Connor's go-ahead; grid-vs-SMC Bayesian
-decision and RTX 3070 claim (MACHINES.md) happen there.
+Phase 2 (estimators) — complete (2026-08-18); Phases 0–1 also complete.
+59 unit tests green; headline figure docs/figures/phase2_rmse_vs_crb.png.
+RTX 3070 claimed and released same day (NN training, 2 runs). Phase 3
+(adaptive sensing) not started — awaiting Connor's go-ahead.
 See docs/ROADMAP.md. Update this line when a phase completes.
 
 ## Orchestration (multi-machine, multi-session)

@@ -42,14 +42,14 @@ physically-motivated noise; every knob traceable to a physical mechanism.
 
 Goal: quantify estimator quality for B-field (and D/T2*) extraction.
 
-- [ ] Baseline: least-squares curve fitting (the universal lab default).
-- [ ] Cramér–Rao bound computation for each protocol/noise config — the
+- [x] Baseline: least-squares curve fitting (the universal lab default).
+- [x] Cramér–Rao bound computation for each protocol/noise config — the
       yardstick everything is measured against.
-- [ ] Bayesian estimator (grid or SMC posterior) on the same records.
-- [ ] NN estimator: small 1D-CNN/transformer mapping raw records → parameter
+- [x] Bayesian estimator (grid or SMC posterior) on the same records.
+- [x] NN estimator: small 1D-CNN/transformer mapping raw records → parameter
       + uncertainty; trained on the Phase 1 generator, evaluated on held-out
       noise configs (test for noise-model overfitting explicitly).
-- [ ] Headline figure: estimator RMSE vs SNR vs CRB, paired realizations,
+- [x] Headline figure: estimator RMSE vs SNR vs CRB, paired realizations,
       error bars; sensitivity (nT/√Hz) implications stated.
 
 **Exit:** a defensible answer to "how much sensitivity does better estimation
