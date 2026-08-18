@@ -3,7 +3,15 @@
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
 signal extraction benchmarked against the Cramér–Rao bound.
 
-**Status: Phases 0–2 complete.** Phase 2 headline: on identical Poisson
+**Status: Phases 0–3 complete.** Phase 3 headline: a Bayesian adaptive
+Ramsey protocol (sequential grid posterior + A-optimal interrogation-time
+selection) reaches 5 kHz posterior uncertainty on the detuning in a median
+48 ms of wall-clock sensing time vs 157 ms for the best convergent fixed
+schedule — a 3.25× speedup — while the prior-Fisher "best single τ" never
+converges at all over a 3.4 MHz prior (fringe aliasing). The adaptive rule
+rediscovers the phase-estimation ladder on its own: it starts at τ ≈ 0.12 µs
+(unambiguous) and ramps to the T2*-limited optimum ≈1.43 µs. See
+`docs/phase3-adaptive-ramsey.md`. Phase 2 headline: on identical Poisson
 Ramsey records, weighted least squares and a Bayesian grid posterior both
 reach 0.94–1.09× the Cramér–Rao bound at every photon budget tested
 (20–20 000 shots/point), i.e. classical fitting is already near-optimal when
@@ -16,9 +24,8 @@ unit-tested against Barry et al., Rev. Mod. Phys. 92, 015004 (2020). Phase 1:
 config-driven virtual-experiment generator — Poisson counts from an explicit
 photon budget, ¹⁴N hyperfine + power broadening (Dréau et al., PRB 84, 195204
 (2011)), and 1/f / OU / thermal drifts on a wall-clock axis, with paired RNG
-streams for estimator comparisons. 59 tests across all phases; figures in
-`docs/figures/`. Phase 3 (adaptive sensing) not started — the roadmap's
-claims there are hypotheses, not findings. Datasets (.npz) are gitignored by
+streams for estimator comparisons. 68 tests across all phases; figures in
+`docs/figures/`. Datasets (.npz) are gitignored by
 design; each embeds config + seed + git SHA and regenerates deterministically
 via `scripts/run_phase1.py <config>`.
 

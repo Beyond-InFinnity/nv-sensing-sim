@@ -57,13 +57,20 @@ buy, and how close to the CRB can each method get, at which SNR regimes?"
 
 ## Phase 3 — Adaptive sensing (exploratory)
 
-- [ ] Bayesian adaptive Ramsey: choose next interrogation time from current
+- [x] Bayesian adaptive Ramsey: choose next interrogation time from current
       posterior (information-gain criterion); compare total-time-to-target-
-      precision vs fixed schedules.
+      precision vs fixed schedules. Result: 3.25× wall-clock speedup to
+      5 kHz posterior σ vs best convergent fixed schedule (48 ms vs 157 ms,
+      60 paired replicates); prior-Fisher fixed τ never converges (fringe
+      aliasing). See `docs/phase3-adaptive-ramsey.md`.
 - [ ] Optional: RL-style or amortized policy if the Bayesian version shows
-      clear wins.
+      clear wins. **Gate resolved 2026-08-18: 3.25× ≥ 2× threshold →
+      recommended as future work** (an amortized policy also fixes the
+      ~0.1 s/decision lookahead cost, the main obstacle to real-time use).
+      Not implemented; awaiting go-ahead.
 
-**Exit:** writeup in `docs/` (blog-post grade) with reproducible figures.
+**Exit:** writeup in `docs/` (blog-post grade) with reproducible figures —
+done: `docs/phase3-adaptive-ramsey.md`.
 
 ## Non-goals (for now)
 

@@ -14,11 +14,13 @@ a noise model that flatters the estimator is worthless.
 
 ## Current status
 
-Phase 2 (estimators) — complete (2026-08-18); Phases 0–1 also complete.
-59 unit tests green; headline figure docs/figures/phase2_rmse_vs_crb.png.
-RTX 3070 claimed and released same day (NN training, 2 runs). Phase 3
-(adaptive sensing) not started — awaiting Connor's go-ahead.
-See docs/ROADMAP.md. Update this line when a phase completes.
+Phase 3 (adaptive sensing) — complete (2026-08-18); Phases 0–2 also
+complete. 68 unit tests green. Phase 3 headline: adaptive A-optimal Ramsey
+reaches 5 kHz posterior σ in 48 ms vs 157 ms best fixed (3.25× speedup);
+writeup docs/phase3-adaptive-ramsey.md, figures phase3_*.png. RL gate
+resolved: recommended as future work, NOT implemented — awaiting Connor's
+go-ahead. RTX 3070 released (CPU-only phase). See docs/ROADMAP.md. Update
+this line when a phase completes.
 
 ## Orchestration (multi-machine, multi-session)
 
