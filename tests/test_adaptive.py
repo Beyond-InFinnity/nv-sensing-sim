@@ -41,3 +41,41 @@ def test_update_is_bayes_consistent_with_batch_likelihood():
     manual = prior.p * np.exp(logl - logl.max())
     manual /= manual.sum()
     np.testing.assert_allclose(p2.p, manual, atol=1e-12)
+
+
+from nvsim.estimators.adaptive import choose_tau, make_schedule  # noqa: E402
+
+TAU_GRID = np.geomspace(0.05e-6, 4.5e-6, 60)
+
+
+def test_choose_tau_returns_grid_value():
+    p = _posterior()
+    rng = np.random.default_rng(1)
+    lam = expected_counts([0.4e-6], 2.0e6, 1.5e-6, READOUT, 100)[0]
+    p.update(rng.poisson(lam), 0.4e-6, 100)
+    tau = choose_tau(p, TAU_GRID, 100)
+    assert TAU_GRID[0] <= tau <= TAU_GRID[-1]
+
+
+def test_narrow_posterior_prefers_longer_tau():
+    wide = _posterior()
+    narrow = _posterior()
+    rng = np.random.default_rng(2)
+    truth = 2.0e6
+    for tau in (0.2e-6, 0.5e-6, 0.9e-6, 1.3e-6) * 6:
+        lam = expected_counts([tau], truth, 1.5e-6, READOUT, 200)[0]
+        narrow.update(rng.poisson(lam), tau, 200)
+    t_wide = choose_tau(wide, TAU_GRID, 100)
+    t_narrow = choose_tau(narrow, TAU_GRID, 100)
+    assert t_narrow > 1.5 * t_wide
+
+
+def test_fixed_schedules_cycle_and_are_posterior_blind():
+    cfg = {"tau_min_s": 0.1e-6, "tau_max_s": 3.2e-6, "n_sweep_points": 8}
+    lin = make_schedule("linear_sweep", cfg)
+    taus = [lin(i, None) for i in range(16)]
+    assert taus[:8] == taus[8:]
+    assert taus[0] == pytest.approx(0.1e-6) and taus[7] == pytest.approx(3.2e-6)
+    exp = make_schedule("exp_ladder", cfg)
+    ladder = [exp(i, None) for i in range(6)]
+    assert ladder[1] / ladder[0] == pytest.approx(2.0)
