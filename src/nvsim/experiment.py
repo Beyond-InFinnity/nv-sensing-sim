@@ -11,6 +11,7 @@ import numpy as np
 
 from .constants import DD_DT_HZ_PER_K, GAMMA_E_HZ_PER_T
 from .drift import sample_drift
+from .estimators.model import ramsey_p0
 from .odmr import odmr_spectrum_n14
 from .provenance import git_sha
 from .pulsed import hahn_echo, rabi, ramsey
@@ -49,8 +50,9 @@ def _p0_pulsed(cfg, sweep_values, det_shift, omega_mult):
                                 detuning_hz=det_shift[i, j],
                                 t1_s=tr.get("t1_s"), t2_s=tr.get("t2_s"))[-1]
             elif proto == "ramsey":
-                p0[i, j] = ramsey([0.0, x], tr["detuning_hz"] + det_shift[i, j],
-                                  t2star_s=tr.get("t2star_s"))[-1]
+                # closed form, identical to the mesolve path (tested to 1e-8)
+                p0[i, j] = ramsey_p0([x], tr["detuning_hz"] + det_shift[i, j],
+                                     tr.get("t2star_s"))[0]
             elif proto == "hahn_echo":
                 p0[i, j] = hahn_echo([x], static_detuning_hz=det_shift[i, j],
                                      t2_s=tr.get("t2_s"))[0]

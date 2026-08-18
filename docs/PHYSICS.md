@@ -78,6 +78,9 @@ H/h = −δ·|1⟩⟨1| + (Ω_R/2)·(|0⟩⟨1| + |1⟩⟨0|),  δ = f_MW − f_
   γφ = 1/T2 − 1/(2T1). Requires T2 ≤ 2T1.
 - On resonance P₀(t) = cos²(πΩ_R t); detuned, generalized Rabi
   Ω' = √(Ω_R² + δ²) with contrast Ω_R²/Ω'².
+- The Ramsey record generator uses the closed-form P₀ (identical to the
+  mesolve path, unit-tested to 1e-8) for speed; Rabi and echo still
+  integrate the master equation.
 
 ## Decoherence
 
