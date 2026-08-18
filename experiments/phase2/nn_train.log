@@ -1,0 +1,45 @@
+[train] epoch 1/40 loss -0.97147
+[train] epoch 2/40 loss -1.93925
+[train] epoch 3/40 loss -1.78152
+[train] epoch 4/40 loss -2.53956
+[train] epoch 5/40 loss -2.36694
+[train] epoch 6/40 loss -3.00134
+[train] epoch 7/40 loss -2.78673
+[train] epoch 8/40 loss -3.37465
+[train] epoch 9/40 loss -2.97093
+[train] epoch 10/40 loss -3.82103
+[train] epoch 11/40 loss -3.40693
+[train] epoch 12/40 loss -3.94679
+[train] epoch 13/40 loss -3.91911
+[train] epoch 14/40 loss -3.21458
+[train] epoch 15/40 loss -3.80121
+[train] epoch 16/40 loss -3.53878
+[train] epoch 17/40 loss -3.14248
+[train] epoch 18/40 loss -3.09200
+[train] epoch 19/40 loss -3.94129
+[train] epoch 20/40 loss -3.73114
+[train] epoch 21/40 loss -4.23291
+[train] epoch 22/40 loss -4.13881
+[train] epoch 23/40 loss -3.27225
+[train] epoch 24/40 loss -4.23257
+[train] epoch 25/40 loss -4.16759
+[train] epoch 26/40 loss -4.08620
+[train] epoch 27/40 loss -4.39093
+[train] epoch 28/40 loss -4.11064
+[train] epoch 29/40 loss -4.23627
+[train] epoch 30/40 loss -4.07826
+[train] epoch 31/40 loss -2.45067
+[train] epoch 32/40 loss -4.42369
+[train] epoch 33/40 loss -4.14464
+[train] epoch 34/40 loss -3.94203
+[train] epoch 35/40 loss -4.40594
+[train] epoch 36/40 loss -4.50259
+[train] epoch 37/40 loss -4.42180
+[train] epoch 38/40 loss -4.32553
+[train] epoch 39/40 loss -4.00253
+[train] epoch 40/40 loss -4.15749
+checkpoint /home/cmfinnerty/projects/nv-sensing-sim/experiments/phase2/nn_ckpt.pt
+/home/cmfinnerty/projects/nv-sensing-sim/scripts/train_nn.py:54: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:822.)
+  "val_rmse_delta_hz": rmse, "final_train_loss": float(loss)}
+wrote /home/cmfinnerty/projects/nv-sensing-sim/experiments/phase2/nn_train.results.json
