@@ -127,6 +127,11 @@ implement the standard shot-noise-limited formulas from Barry et al. §III and
 test against their worked examples. All sensitivity numbers must state the
 assumed photon budget.
 
+Phase 2 computes the Poisson CRB directly from the record model:
+I_jk = Σᵢ (∂λᵢ/∂θⱼ)(∂λᵢ/∂θₖ)/λᵢ with θ = (δ, T2*) jointly unknown and the
+readout calibrated/known. σ_B = σ_δ/γ. Sensitivity η = σ_B·√T_total with
+T_total the record's wall-clock duration from the timing model.
+
 ## Virtual experiment timing model (Phase 1)
 
 A record is n_sweeps sequential sweeps over n_points settings; each point is
