@@ -85,10 +85,14 @@ def plot_headline(art_dir, out):
             rmse, lo, hi = _rmse_and_ci(errs, rng)
             rmses.append(rmse), los.append(lo), his.append(hi)
         rmses, los, his = map(np.asarray, (rmses, los, his))
+        open_marker = est == "lsq"  # LSQ overlaps Bayes at every rung
         ax.errorbar(n_shots, rmses, yerr=[rmses - los, his - rmses],
                     color=EST_COLORS[est], linewidth=1.8, marker="o",
-                    markersize=5, markeredgecolor=SURFACE, capsize=2,
-                    label=EST_LABELS[est], zorder=3)
+                    markersize=8 if open_marker else 5,
+                    markerfacecolor="none" if open_marker else EST_COLORS[est],
+                    markeredgecolor=EST_COLORS[est] if open_marker else SURFACE,
+                    capsize=2, label=EST_LABELS[est],
+                    zorder=3 if open_marker else 4)
         eff_hi = crb[-1] / rmses[-1]
         ax.annotate(f"{EST_LABELS[est]}: CRB/RMSE = {eff_hi:.2f} @ 2e4",
                     (0.02, 0.16 - 0.055 * estimators.index(est)),
@@ -109,8 +113,7 @@ def plot_headline(art_dir, out):
                  color=INK, fontsize=11)
     ax.legend(frameon=False, loc="upper right", fontsize=8.5)
     _footnote(fig, "200 paired records/rung; 68% bootstrap CIs; R = 60 Mcps, "
-                   "C = 0.25, t_read = 0.4 µs, f_pump = 0.95; "
-                   "δ_true = 2 MHz, T2* = 1.5 µs jointly estimated")
+                   "C = 0.25, t_read = 0.4 µs; δ = 2 MHz, T2* jointly fit")
     fig.tight_layout(rect=(0, 0.02, 1, 1))
     _save(fig, out)
 
@@ -147,8 +150,8 @@ def plot_generalization(art_dir, out):
                         color=INK, fontsize=7.5)
     crb = arts[0]["crb_sigma_delta_hz"]
     ax.axhline(crb, color=SECONDARY, linestyle="--", linewidth=1.2)
-    ax.annotate(f"CRB (well-specified) = {crb:.0f} Hz", (0.99, crb),
-                xytext=(0, 4), textcoords="offset points", ha="right",
+    ax.annotate(f"CRB (well-specified) = {crb:.0f} Hz", (0.40, crb),
+                xytext=(0, 5), textcoords="offset points", ha="center",
                 color=SECONDARY, fontsize=8,
                 xycoords=("axes fraction", "data"))
     ax.set_xticks(xs, labels)
