@@ -90,12 +90,18 @@ def plot_sigma_vs_time(arts, out):
               linewidth=1, linestyle=":")
     ax.annotate("$t^{-1/2}$", (0.19, 5.3e3), color=MUTED, fontsize=8)
     ax.axhline(TARGET_HZ, color=SECONDARY, linewidth=0.9, linestyle="--")
-    ax.annotate(f"target {TARGET_HZ / 1e3:.0f} kHz", (2.4e-3, TARGET_HZ * 1.15),
+    ax.annotate(f"target {TARGET_HZ / 1e3:.0f} kHz", (2.1e-2, TARGET_HZ * 1.15),
                 color=SECONDARY, fontsize=8)
-    tt = {k: np.nanmedian(_time_to_target(arts[k], TARGET_HZ)) for k in ORDER}
+    tt = {}
     lines = [f"median time to {TARGET_HZ / 1e3:.0f} kHz:"]
     for k in ORDER:
-        lines.append(f"  {LABELS[k]}: {tt[k] * 1e3:.0f} ms")
+        per_run = _time_to_target(arts[k], TARGET_HZ)
+        n_hit = int(np.sum(~np.isnan(per_run)))
+        tt[k] = np.nanmedian(per_run) if n_hit > len(per_run) // 2 else np.nan
+        if np.isnan(tt[k]):
+            lines.append(f"  {LABELS[k]}: never ({n_hit}/{len(per_run)} runs)")
+        else:
+            lines.append(f"  {LABELS[k]}: {tt[k] * 1e3:.0f} ms")
     ax.annotate("\n".join(lines), (0.02, 0.05), xycoords="axes fraction",
                 color=INK, fontsize=8, va="bottom")
     axes[0].legend(frameon=False, loc="upper right", fontsize=8.5)
@@ -152,8 +158,11 @@ def main():
             for k in ORDER}
     tt = plot_sigma_vs_time(arts, args.out / "phase3_sigma_vs_time.png")
     plot_tau_trajectory(arts, args.out / "phase3_tau_trajectory.png")
-    best_fixed = min(tt[k] for k in ORDER if k != "adaptive")
-    print(f"speedup adaptive vs best fixed: {best_fixed / tt['adaptive']:.2f}x")
+    fixed = [tt[k] for k in ORDER if k != "adaptive" and not np.isnan(tt[k])]
+    if fixed:
+        print(f"speedup adaptive vs best fixed: {min(fixed) / tt['adaptive']:.2f}x")
+    else:
+        print("speedup adaptive vs best fixed: n/a (no fixed schedule reached target)")
 
 
 if __name__ == "__main__":
