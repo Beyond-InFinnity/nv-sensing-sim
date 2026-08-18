@@ -1,0 +1,37 @@
+{
+ "name": "heldout_drifted",
+ "kind": "single",
+ "base": {
+  "protocol": "ramsey",
+  "seed": 203,
+  "sweep": {
+   "min": 0.0,
+   "max": 5e-06,
+   "n_points": 150
+  },
+  "n_sweeps": 200,
+  "n_shots": 2000,
+  "truth": {
+   "detuning_hz": 2000000.0,
+   "t2star_s": 1.5e-06
+  },
+  "timing": {
+   "t_init_s": 2e-06,
+   "t_read_s": 4e-07,
+   "t_dead_s": 1e-06
+  },
+  "readout": {
+   "r_hz": 60000000.0,
+   "contrast": 0.25,
+   "t_read_s": 4e-07,
+   "f_pump": 0.95
+  },
+  "drift": {
+   "b_field_t": {
+    "kind": "one_over_f",
+    "rms": 2e-07,
+    "alpha": 1.0
+   }
+  }
+ }
+}
