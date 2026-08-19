@@ -92,3 +92,26 @@ def test_policy_schedule_kind_in_simulate_run(tmp_path):
     for tau in out["tau_s"]:
         assert np.min(np.abs(cand - tau)) < 1e-15
     assert out["sigma_hz"][-1] < out["sigma_hz"][0]
+
+
+def test_rl_stays_finite_on_drift_env():
+    """Regression: drift-env fine-tuning must not NaN (crash 2026-08-19).
+    Aggressive lr to provoke instability; guards must keep params finite."""
+    import torch
+    from nvsim.estimators.policy_net import finetune_rl
+    torch.manual_seed(1)
+    cfg = dict(CFG, time_budget_s=0.01)
+    n_act = len(tau_candidates(cfg))
+    env = VecRamseyEnv(cfg, 1, np.random.default_rng(0), n_grid=200)
+    net = PolicyNet(env.n_features, n_act)
+    pol = AmortizedPolicy(net, {"n_features": env.n_features,
+                                "n_actions": n_act})
+    rl_cfg = {"n_envs": 16, "n_iters": 10, "lr": 3e-3, "clip": 0.2,
+              "entropy_coef": 0.01, "value_coef": 0.5, "update_epochs": 4,
+              "minibatch": 64, "n_grid": 200, "seed": 6}
+    drift = {"kind": "ou", "sigma_hz": 100e3, "tau_s": 50e-3}
+    hist = finetune_rl(pol, cfg, rl_cfg, np.random.default_rng(6),
+                       drift=drift)
+    assert np.all(np.isfinite(hist["mean_return"]))
+    for p in net.parameters():
+        assert torch.isfinite(p).all()

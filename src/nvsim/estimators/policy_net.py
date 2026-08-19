@@ -143,6 +143,10 @@ def finetune_rl(policy, env_cfg, rl_cfg, rng, drift=None, progress=None):
         LP = torch.as_tensor(np.array(logps).reshape(-1)[flat],
                              dtype=torch.float32)
         R = torch.as_tensor(rtg.reshape(-1)[flat], dtype=torch.float32)
+        # normalize returns per iteration: bounds the value target so the
+        # value loss cannot blow up on long-episode (drift) returns
+        R_mu, R_sd = R.mean(), R.std() + 1e-8
+        Rn = (R - R_mu) / R_sd
         ent_coef = rl_cfg["entropy_coef"] * (1 - it / rl_cfg["n_iters"])
         for _ in range(rl_cfg["update_epochs"]):
             perm = torch.randperm(len(O))
@@ -150,15 +154,23 @@ def finetune_rl(policy, env_cfg, rl_cfg, rng, drift=None, progress=None):
                 idx = perm[i:i + rl_cfg["minibatch"]]
                 logits, value = net(O[idx])
                 dist = torch.distributions.Categorical(logits=logits)
-                adv = R[idx] - value.detach()
+                adv = Rn[idx] - value.detach()
                 adv = (adv - adv.mean()) / (adv.std() + 1e-8)
-                ratio = torch.exp(dist.log_prob(A_[idx]) - LP[idx])
+                # clamp the log-ratio: exp() overflow across update epochs
+                # was the NaN source in the drift run (2026-08-19)
+                log_ratio = torch.clamp(dist.log_prob(A_[idx]) - LP[idx],
+                                        -20.0, 20.0)
+                ratio = torch.exp(log_ratio)
                 clipped = torch.clamp(ratio, 1 - rl_cfg["clip"],
                                       1 + rl_cfg["clip"])
                 pg = -torch.min(ratio * adv, clipped * adv).mean()
-                vloss = ((value - R[idx]) ** 2).mean()
+                vloss = torch.nn.functional.smooth_l1_loss(value, Rn[idx])
                 ent = dist.entropy().mean()
                 loss = (pg + rl_cfg["value_coef"] * vloss - ent_coef * ent)
+                if not torch.isfinite(loss):
+                    history.setdefault("skipped_minibatches", 0)
+                    history["skipped_minibatches"] += 1
+                    continue
                 opt.zero_grad()
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(net.parameters(), 1.0)
