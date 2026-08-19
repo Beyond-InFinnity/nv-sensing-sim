@@ -175,6 +175,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--artifacts", type=Path,
                     default=REPO / "experiments/phase3b/artifacts")
+    ap.add_argument("--artifacts-drift", type=Path,
+                    default=REPO / "experiments/phase3b/artifacts_drift")
     ap.add_argument("--out", type=Path, default=REPO / "docs/figures")
     args = ap.parse_args()
 
@@ -188,10 +190,10 @@ def main():
         print(f"gate 3b-A: policy_rl / adaptive time-to-target = "
               f"{tt['policy_rl'] / tt['adaptive']:.2f} (pass < 1.2)")
 
-    drift_paths = [args.artifacts / f"{k}.json" for k in DRIFT]
+    drift_paths = [args.artifacts_drift / f"{k}.json" for k in DRIFT]
     if all(p.exists() for p in drift_paths):
-        drift_arts = {k: json.loads((args.artifacts / f"{k}.json").read_text())
-                      for k in DRIFT}
+        drift_arts = {k: json.loads(
+            (args.artifacts_drift / f"{k}.json").read_text()) for k in DRIFT}
         track = plot_drift(drift_arts, args.out / "phase3b_drift_tracking.png")
         print(f"gate 3b-B: drift-policy / myopic tracking-error ratio = "
               f"{track['policy_rl_drift'] / track['adaptive']:.2f}")
