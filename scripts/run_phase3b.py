@@ -6,6 +6,7 @@ import argparse
 import json
 import time
 import zlib
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +15,15 @@ from nvsim.estimators.adaptive import simulate_run
 from nvsim.provenance import git_sha
 
 REPO = Path(__file__).resolve().parent.parent
+
+
+def _one_run(job):
+    """Worker: one (method, replicate) cell. Seeding is per-cell, so results
+    are independent of worker count and scheduling order."""
+    run_cfg, kind, name, seed, i, d = job
+    rng = np.random.default_rng(
+        np.random.SeedSequence([seed, zlib.crc32(name.encode()), i]))
+    return {"true_delta_hz": d, **simulate_run(d, kind, run_cfg, rng)}
 
 
 def latency_bench(cfg, n_reps=200):
@@ -74,24 +84,31 @@ def main():
     rng_truth = np.random.default_rng(ss.spawn(1)[0])
     lo, hi = cfg["delta_range_hz"]
     true_deltas = rng_truth.uniform(lo, hi, cfg["n_replicates"]).tolist()
-    for m in cfg["methods"]:
-        run_cfg = {k: v for k, v in cfg.items() if k != "methods"}
-        if "policy_ckpt" in m:
-            run_cfg["policy_ckpt"] = m["policy_ckpt"]
-        tag = zlib.crc32(m["name"].encode())
-        runs = []
-        for i, d in enumerate(true_deltas):
-            rng = np.random.default_rng(
-                np.random.SeedSequence([cfg["seed"], tag, i]))
-            runs.append({"true_delta_hz": d,
-                         **simulate_run(d, m["kind"], run_cfg, rng)})
-            print(f"{m['name']} {i + 1}/{len(true_deltas)}", flush=True)
-        art = {"config": cfg, "method": m, "seed": cfg["seed"],
-               "git_sha": git_sha(), "true_deltas_hz": true_deltas,
-               "runs": runs}
-        out = args.out_dir / f"{m['name']}.json"
-        out.write_text(json.dumps(art))
-        print(f"wrote {out}", flush=True)
+    n_workers = cfg.get("n_workers", 1)
+    pool = ProcessPoolExecutor(max_workers=n_workers) if n_workers > 1 \
+        else None
+    try:
+        for m in cfg["methods"]:
+            run_cfg = {k: v for k, v in cfg.items()
+                       if k not in ("methods", "n_workers")}
+            if "policy_ckpt" in m:
+                run_cfg["policy_ckpt"] = m["policy_ckpt"]
+            jobs = [(run_cfg, m["kind"], m["name"], cfg["seed"], i, d)
+                    for i, d in enumerate(true_deltas)]
+            runs = []
+            it = pool.map(_one_run, jobs) if pool else map(_one_run, jobs)
+            for i, r in enumerate(it):
+                runs.append(r)
+                print(f"{m['name']} {i + 1}/{len(true_deltas)}", flush=True)
+            art = {"config": cfg, "method": m, "seed": cfg["seed"],
+                   "git_sha": git_sha(), "true_deltas_hz": true_deltas,
+                   "runs": runs}
+            out = args.out_dir / f"{m['name']}.json"
+            out.write_text(json.dumps(art))
+            print(f"wrote {out}", flush=True)
+    finally:
+        if pool:
+            pool.shutdown()
 
 
 if __name__ == "__main__":
