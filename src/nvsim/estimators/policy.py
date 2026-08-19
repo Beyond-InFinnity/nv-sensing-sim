@@ -131,8 +131,11 @@ class VecRamseyEnv:
             self.elapsed_s[idx] += dt[idx]
 
         sigma_after = self.sigma_hz()
-        reward = np.where(active, np.log(sigma_before**2)
-                          - np.log(sigma_after**2), 0.0)
+        # floor at 1 Hz: a posterior collapsed onto a single grid node has
+        # sigma exactly 0 and would give an infinite reward
+        reward = np.where(active,
+                          np.log(np.maximum(sigma_before, 1.0) ** 2)
+                          - np.log(np.maximum(sigma_after, 1.0) ** 2), 0.0)
         self.done = self.elapsed_s >= self.cfg["time_budget_s"]
         self.step_count += 1
         info = {"counts": counts, "sigma_hz": sigma_after,
@@ -187,5 +190,9 @@ def compute_features(p, grid, cfg, elapsed_s):
     ], axis=1)
     g = p.shape[1] // 32
     pooled = p[:, : 32 * g].reshape(p.shape[0], 32, g).max(axis=2)
-    pooled = pooled / pooled.max(axis=1, keepdims=True)
+    # a posterior concentrated entirely in the residual cells beyond 32*g
+    # pools to all zeros — keep it zeros rather than dividing 0/0 (the
+    # scalar features still carry mean/sigma; pooling window unchanged to
+    # keep the feature definition identical to the BC dataset)
+    pooled = pooled / np.maximum(pooled.max(axis=1, keepdims=True), 1e-300)
     return np.concatenate([scalars, pooled], axis=1)

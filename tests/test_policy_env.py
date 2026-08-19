@@ -137,3 +137,26 @@ def test_drift_truth_moves_and_is_tracked():
     assert np.any(env.true_delta_hz != d0)          # truth actually drifted
     err = np.abs(info["mean_hz"] - env.true_delta_hz)
     assert np.median(err) < DRIFT["sigma_hz"]       # tracking, not lost
+
+
+def test_features_finite_for_edge_concentrated_posterior():
+    """Mass entirely in the last grid cells (outside the 576-cell pooling
+    window) must give finite features, not NaN (RL crash 2026-08-18)."""
+    from nvsim.estimators.policy import compute_features
+    rng = np.random.default_rng(20)
+    env = VecRamseyEnv(CFG, n_envs=1, rng=rng)
+    env.reset()
+    p = np.zeros((1, len(env.grid)))
+    p[0, -1] = 1.0                      # delta pinned at the top edge
+    f = compute_features(p, env.grid, CFG, 0.001)
+    assert np.all(np.isfinite(f))
+
+
+def test_reward_finite_when_posterior_collapses_to_one_node():
+    rng = np.random.default_rng(21)
+    env = VecRamseyEnv(CFG, n_envs=1, rng=rng)
+    env.reset()
+    env.p[0] = 0.0
+    env.p[0, 300] = 1.0                 # sigma exactly 0
+    _, r, _, _ = env.step(np.array([5]))
+    assert np.all(np.isfinite(r))
