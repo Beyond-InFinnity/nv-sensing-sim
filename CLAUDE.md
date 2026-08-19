@@ -14,13 +14,14 @@ a noise model that flatters the estimator is worthless.
 
 ## Current status
 
-Phase 3 (adaptive sensing) — complete (2026-08-18); Phases 0–2 also
-complete. 68 unit tests green. Phase 3 headline: adaptive A-optimal Ramsey
-reaches 5 kHz posterior σ in 48 ms vs 157 ms best fixed (3.25× speedup);
-writeup docs/phase3-adaptive-ramsey.md, figures phase3_*.png. RL gate
-resolved: recommended as future work, NOT implemented — awaiting Connor's
-go-ahead. RTX 3070 released (CPU-only phase). See docs/ROADMAP.md. Update
-this line when a phase completes.
+Phase 3b (amortized policy) — complete (2026-08-19); Phases 0–3 also
+complete. All roadmap boxes done. Phase 3 headline: adaptive A-optimal
+Ramsey reaches 5 kHz posterior σ in 48 ms vs 157 ms best fixed (3.25×).
+Phase 3b headline: BC-cloned policy matches the teacher at 1.09× with
+89 µs decisions (6,600× latency win); RL fine-tuning and nonmyopia-under-
+drift both measured negative (docs/phase3b-amortized-policy.md). Writeups
+docs/phase3-adaptive-ramsey.md + phase3b; RTX 3070 never claimed (all CPU).
+See docs/ROADMAP.md. Update this line when a phase completes.
 
 ## Orchestration (multi-machine, multi-session)
 

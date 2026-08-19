@@ -63,14 +63,18 @@ buy, and how close to the CRB can each method get, at which SNR regimes?"
       5 kHz posterior σ vs best convergent fixed schedule (48 ms vs 157 ms,
       60 paired replicates); prior-Fisher fixed τ never converges (fringe
       aliasing). See `docs/phase3-adaptive-ramsey.md`.
-- [ ] Optional: RL-style or amortized policy if the Bayesian version shows
-      clear wins. **Gate resolved 2026-08-18: 3.25× ≥ 2× threshold →
-      recommended as future work** (an amortized policy also fixes the
-      ~0.1 s/decision lookahead cost, the main obstacle to real-time use).
-      Not implemented; awaiting go-ahead.
+- [x] Optional: RL-style or amortized policy — done (Phase 3b, 2026-08-19).
+      Behavior cloning matches the A-optimal teacher at 1.09× time-to-target
+      with 89 µs decisions (vs 589 ms lookahead) — the Phase 3 speedup is
+      real-time deployable. Two measured negatives: PPO fine-tuning never
+      beat cloning (and under an unstable objective broke tail reliability
+      via fringe aliasing), and under OU drift a nonmyopically-trained
+      policy tracked 22% worse than the myopic lookahead — the drift-aware
+      posterior already makes myopic A-optimal near-optimal at drift rates
+      that don't threaten fringe lock. See `docs/phase3b-amortized-policy.md`.
 
 **Exit:** writeup in `docs/` (blog-post grade) with reproducible figures —
-done: `docs/phase3-adaptive-ramsey.md`.
+done: `docs/phase3-adaptive-ramsey.md`, `docs/phase3b-amortized-policy.md`.
 
 ## Non-goals (for now)
 

@@ -3,7 +3,17 @@
 Simulation of NV-diamond magnetometry with realistic noise, plus ML/Bayesian
 signal extraction benchmarked against the Cramér–Rao bound.
 
-**Status: Phases 0–3 complete.** Phase 3 headline: a Bayesian adaptive
+**Status: all phases (0–3b) complete.** Phase 3b headline: the adaptive
+schedule is real-time deployable — a 20k-parameter policy net trained by
+behavior cloning matches the A-optimal lookahead at 1.09× its
+time-to-target while deciding in 89 µs instead of 589 ms (6,600× faster
+than the lookahead, and faster than the 250-shot batch it steers). Two
+measured negatives worth as much as the positive: PPO fine-tuning never
+improved on cloning (mean-return optimization traded away fringe-aliasing
+insurance in the tails), and under Ornstein–Uhlenbeck detuning drift a
+nonmyopically-trained policy tracked 22% *worse* than the myopic lookahead
+— a drift-aware posterior already makes the myopic rule near-optimal. See
+`docs/phase3b-amortized-policy.md`. Phase 3 headline: a Bayesian adaptive
 Ramsey protocol (sequential grid posterior + A-optimal interrogation-time
 selection) reaches 5 kHz posterior uncertainty on the detuning in a median
 48 ms of wall-clock sensing time vs 157 ms for the best convergent fixed
@@ -24,7 +34,7 @@ unit-tested against Barry et al., Rev. Mod. Phys. 92, 015004 (2020). Phase 1:
 config-driven virtual-experiment generator — Poisson counts from an explicit
 photon budget, ¹⁴N hyperfine + power broadening (Dréau et al., PRB 84, 195204
 (2011)), and 1/f / OU / thermal drifts on a wall-clock axis, with paired RNG
-streams for estimator comparisons. 68 tests across all phases; figures in
+streams for estimator comparisons. 86 tests across all phases; figures in
 `docs/figures/`. Datasets (.npz) are gitignored by
 design; each embeds config + seed + git SHA and regenerates deterministically
 via `scripts/run_phase1.py <config>`.
