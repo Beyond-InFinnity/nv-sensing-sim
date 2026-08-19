@@ -34,6 +34,7 @@ def main():
     t0 = time.time()
     X, y = collect_bc_dataset(
         env_cfg, cfg["n_teacher_episodes"], rng,
+        n_workers=cfg.get("n_workers", 1),
         progress=lambda step, ndone: print(
             f"teacher step {step}, episodes finished {ndone}"
             f"/{cfg['n_teacher_episodes']}", flush=True))

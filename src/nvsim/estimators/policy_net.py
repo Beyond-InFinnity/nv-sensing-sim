@@ -48,33 +48,57 @@ class AmortizedPolicy:
         return cls(net, blob["cfg"])
 
 
-def _teacher_action(env, row):
-    """choose_tau (the Phase 3 A-optimal rule) on one env row's posterior."""
+def _teacher_action_row(p_row, grid, cfg):
+    """choose_tau (the Phase 3 A-optimal rule) on one posterior row.
+
+    Module-level pure function so a process pool can run rows in parallel
+    (each decision is ~0.6 s of lookahead; rows are independent)."""
     from .adaptive import DeltaPosterior, choose_tau
     post = DeltaPosterior.__new__(DeltaPosterior)
-    post.grid = env.grid
-    post.p = env.p[row]
-    post.t2star_s = env.cfg["t2star_s"]
-    post.readout_cfg = env.cfg["readout"]
-    full_grid = np.geomspace(env.cfg["tau_min_s"], env.cfg["tau_max_s"], 60)
-    tau = choose_tau(post, full_grid, env.cfg["n_shots_per_batch"])
-    return int(np.argmin(np.abs(env.tau_candidates_s - tau)))
+    post.grid = grid
+    post.p = p_row
+    post.t2star_s = cfg["t2star_s"]
+    post.readout_cfg = cfg["readout"]
+    full_grid = np.geomspace(cfg["tau_min_s"], cfg["tau_max_s"], 60)
+    tau = choose_tau(post, full_grid, cfg["n_shots_per_batch"])
+    return int(np.argmin(np.abs(tau_candidates(cfg) - tau)))
 
 
-def collect_bc_dataset(cfg, n_episodes, rng, drift=None, progress=None):
+def _teacher_action(env, row):
+    return _teacher_action_row(env.p[row], env.grid, env.cfg)
+
+
+def collect_bc_dataset(cfg, n_episodes, rng, drift=None, progress=None,
+                       n_workers=1):
     """Roll episodes with the A-optimal teacher; log (features, action)."""
+    from concurrent.futures import ProcessPoolExecutor
     X, y = [], []
     env = VecRamseyEnv(cfg, n_envs=n_episodes, rng=rng, drift=drift)
     feats = env.reset()
-    while not env.done.all():
-        actions = np.zeros(env.n_envs, dtype=np.int64)
-        for e in np.nonzero(~env.done)[0]:
-            actions[e] = _teacher_action(env, e)
-            X.append(feats[e])
-            y.append(actions[e])
-        feats, _, _, _ = env.step(actions)
-        if progress:
-            progress(env.step_count, int(env.done.sum()))
+    pool = (ProcessPoolExecutor(max_workers=n_workers)
+            if n_workers > 1 else None)
+    try:
+        while not env.done.all():
+            active = np.nonzero(~env.done)[0]
+            actions = np.zeros(env.n_envs, dtype=np.int64)
+            if pool is not None:
+                acts = list(pool.map(
+                    _teacher_action_row,
+                    (env.p[e] for e in active),
+                    (env.grid for _ in active),
+                    (env.cfg for _ in active), chunksize=4))
+            else:
+                acts = [_teacher_action(env, e) for e in active]
+            for e, a in zip(active, acts):
+                actions[e] = a
+                X.append(feats[e])
+                y.append(a)
+            feats, _, _, _ = env.step(actions)
+            if progress:
+                progress(env.step_count, int(env.done.sum()))
+    finally:
+        if pool is not None:
+            pool.shutdown()
     return np.array(X, dtype=np.float32), np.array(y, dtype=np.int64)
 
 
