@@ -28,12 +28,12 @@ STATIC_LABELS = {"adaptive": "A-optimal lookahead (teacher)",
                  "policy_rl": "policy (BC + RL)",
                  "policy_bc": "policy (BC only)",
                  "exp_ladder": "exponential ladder"}
-DRIFT = ["adaptive", "policy_rl_drift", "policy_rl_static", "exp_ladder"]
+DRIFT = ["adaptive", "policy_rl_drift", "policy_static", "exp_ladder"]
 DRIFT_COLORS = {"adaptive": "#2a78d6", "policy_rl_drift": "#eb6834",
-                "policy_rl_static": "#1baf7a", "exp_ladder": "#eda100"}
+                "policy_static": "#1baf7a", "exp_ladder": "#eda100"}
 DRIFT_LABELS = {"adaptive": "myopic A-optimal",
                 "policy_rl_drift": "policy (RL on drift)",
-                "policy_rl_static": "policy (RL static, transfer)",
+                "policy_static": "policy (BC static, transfer)",
                 "exp_ladder": "exponential ladder"}
 
 
