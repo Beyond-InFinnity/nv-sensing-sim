@@ -3,7 +3,9 @@
 
 Stage bc: roll A-optimal teacher episodes (the expensive step), fit the
 policy net by cross-entropy, write checkpoint + results JSON.
-Usage: train_policy.py CONFIG --stage bc
+Stage rl: PPO-style fine-tune from an init checkpoint (config keys:
+init_ckpt, out_tag, rl{...}, optional drift{...}).
+Usage: train_policy.py CONFIG --stage bc|rl
 """
 import argparse
 import json
@@ -13,21 +15,46 @@ from pathlib import Path
 import numpy as np
 
 from nvsim.estimators.policy import VecRamseyEnv, tau_candidates
-from nvsim.estimators.policy_net import collect_bc_dataset, train_bc
+from nvsim.estimators.policy_net import (AmortizedPolicy, collect_bc_dataset,
+                                         finetune_rl, train_bc)
 from nvsim.provenance import git_sha
 
 REPO = Path(__file__).resolve().parent.parent
 
 
+def run_rl(cfg, out_dir):
+    rng = np.random.default_rng(np.random.SeedSequence([cfg["seed"], 1]))
+    pol = AmortizedPolicy.load(cfg["init_ckpt"])
+    t0 = time.time()
+    hist = finetune_rl(pol, cfg["env"], cfg["rl"], rng,
+                       drift=cfg.get("drift"),
+                       progress=lambda it, ret: print(
+                           f"rl iter {it + 1}/{cfg['rl']['n_iters']} "
+                           f"return {ret:.2f}", flush=True))
+    tag = cfg.get("out_tag", "rl")
+    pol.save(out_dir / f"{tag}_policy.pt")
+    results = {"config": cfg, "git_sha": git_sha(),
+               "hours": (time.time() - t0) / 3600,
+               "mean_return": hist["mean_return"],
+               "entropy": hist["entropy"]}
+    (out_dir / f"{tag}_train.results.json").write_text(json.dumps(results))
+    print(f"wrote {out_dir / f'{tag}_train.results.json'} "
+          f"(return {hist['mean_return'][0]:.2f} -> "
+          f"{hist['mean_return'][-1]:.2f})", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("config", type=Path)
-    ap.add_argument("--stage", choices=["bc"], default="bc")
+    ap.add_argument("--stage", choices=["bc", "rl"], default="bc")
     ap.add_argument("--out-dir", type=Path,
                     default=REPO / "experiments/phase3b")
     args = ap.parse_args()
     cfg = json.loads(args.config.read_text())
     args.out_dir.mkdir(parents=True, exist_ok=True)
+    if args.stage == "rl":
+        run_rl(cfg, args.out_dir)
+        return
     env_cfg = cfg["env"]
     rng = np.random.default_rng(np.random.SeedSequence([cfg["seed"], 0]))
 

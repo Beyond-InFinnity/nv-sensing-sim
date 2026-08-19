@@ -102,6 +102,74 @@ def collect_bc_dataset(cfg, n_episodes, rng, drift=None, progress=None,
     return np.array(X, dtype=np.float32), np.array(y, dtype=np.int64)
 
 
+def finetune_rl(policy, env_cfg, rl_cfg, rng, drift=None, progress=None):
+    """PPO-style fine-tuning of an AmortizedPolicy on VecRamseyEnv.
+
+    Full-episode rollouts from n_envs parallel environments; per-step
+    advantage = reward-to-go minus the learned value head; clipped
+    surrogate + value loss + linearly annealed entropy bonus. In-repo on
+    purpose (~100 lines) — no RL library dependency."""
+    torch.manual_seed(rl_cfg.get("seed", 0))
+    net = policy.net.train()
+    opt = torch.optim.Adam(net.parameters(), lr=rl_cfg["lr"])
+    history = {"mean_return": [], "entropy": []}
+    for it in range(rl_cfg["n_iters"]):
+        env = VecRamseyEnv(env_cfg, rl_cfg["n_envs"], rng, drift=drift,
+                           n_grid=rl_cfg.get("n_grid", 600))
+        feats = env.reset()
+        obs, acts, logps, rews, masks = [], [], [], [], []
+        while not env.done.all():
+            active = ~env.done
+            with torch.no_grad():
+                logits, _ = net(torch.as_tensor(feats, dtype=torch.float32))
+                dist = torch.distributions.Categorical(logits=logits)
+                a = dist.sample()
+                lp = dist.log_prob(a)
+            obs.append(feats.copy())
+            acts.append(a.numpy())
+            logps.append(lp.numpy())
+            masks.append(active.copy())
+            feats, r, _, _ = env.step(a.numpy())
+            rews.append(r)
+        rews = np.array(rews)                       # (T, E)
+        rtg = np.flip(np.cumsum(np.flip(rews, 0), 0), 0).copy()
+        m = np.array(masks)
+        history["mean_return"].append(float(rews.sum(axis=0).mean()))
+
+        flat = m.reshape(-1)
+        O = torch.as_tensor(np.array(obs).reshape(-1, env.n_features)[flat],
+                            dtype=torch.float32)
+        A_ = torch.as_tensor(np.array(acts).reshape(-1)[flat])
+        LP = torch.as_tensor(np.array(logps).reshape(-1)[flat],
+                             dtype=torch.float32)
+        R = torch.as_tensor(rtg.reshape(-1)[flat], dtype=torch.float32)
+        ent_coef = rl_cfg["entropy_coef"] * (1 - it / rl_cfg["n_iters"])
+        for _ in range(rl_cfg["update_epochs"]):
+            perm = torch.randperm(len(O))
+            for i in range(0, len(perm), rl_cfg["minibatch"]):
+                idx = perm[i:i + rl_cfg["minibatch"]]
+                logits, value = net(O[idx])
+                dist = torch.distributions.Categorical(logits=logits)
+                adv = R[idx] - value.detach()
+                adv = (adv - adv.mean()) / (adv.std() + 1e-8)
+                ratio = torch.exp(dist.log_prob(A_[idx]) - LP[idx])
+                clipped = torch.clamp(ratio, 1 - rl_cfg["clip"],
+                                      1 + rl_cfg["clip"])
+                pg = -torch.min(ratio * adv, clipped * adv).mean()
+                vloss = ((value - R[idx]) ** 2).mean()
+                ent = dist.entropy().mean()
+                loss = (pg + rl_cfg["value_coef"] * vloss - ent_coef * ent)
+                opt.zero_grad()
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(net.parameters(), 1.0)
+                opt.step()
+        history["entropy"].append(float(ent))
+        if progress:
+            progress(it, history["mean_return"][-1])
+    net.eval()
+    return history
+
+
 def train_bc(X, y, n_features, n_actions, epochs=20, lr=1e-3, seed=0,
              batch_size=512, heldout_frac=0.1):
     """Behavior cloning: cross-entropy on (features, teacher action)."""

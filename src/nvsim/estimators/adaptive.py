@@ -29,6 +29,16 @@ class DeltaPosterior:
         self.p = np.exp(logp)
         self.p /= self.p.sum()
 
+    def diffuse(self, sigma_hz):
+        """Drift prediction step: convolve with N(0, sigma_hz^2) (see
+        docs/PHYSICS.md, 'Drift-aware sequential posterior')."""
+        from scipy.ndimage import gaussian_filter1d
+        cell = self.grid[1] - self.grid[0]
+        if sigma_hz > 0.05 * cell:
+            self.p = gaussian_filter1d(self.p, sigma_hz / cell,
+                                       mode="constant", cval=0.0)
+            self.p /= self.p.sum()
+
     def mean(self):
         return float((self.p * self.grid).sum())
 
@@ -114,6 +124,23 @@ def make_schedule(kind, cfg):
         taus = np.linspace(cfg["tau_min_s"], cfg["tau_max_s"],
                            cfg["n_sweep_points"])
         return lambda step, post: float(taus[step % len(taus)])
+    if kind == "policy":
+        from .policy import compute_features, tau_candidates
+        from .policy_net import AmortizedPolicy
+        pol = AmortizedPolicy.load(cfg["policy_ckpt"])
+        cand = tau_candidates(cfg)
+        t = cfg["timing"]
+        state = {"elapsed_s": 0.0, "last_tau_s": None}
+
+        def sched(step, post):
+            if state["last_tau_s"] is not None:
+                state["elapsed_s"] += cfg["n_shots_per_batch"] * (
+                    t["t_init_s"] + state["last_tau_s"]
+                    + t["t_read_s"] + t["t_dead_s"])
+            f = compute_features(post.p, post.grid, cfg, state["elapsed_s"])
+            state["last_tau_s"] = float(cand[pol.act(f)[0]])
+            return state["last_tau_s"]
+        return sched
     if kind == "exp_ladder":
         ladder = []
         t = cfg["tau_min_s"]
@@ -125,7 +152,12 @@ def make_schedule(kind, cfg):
 
 
 def simulate_run(true_delta_hz, kind, cfg, rng):
-    """One sequential experiment under a schedule; honest wall-clock cost."""
+    """One sequential experiment under a schedule; honest wall-clock cost.
+
+    Optional cfg["drift"] = {"kind": "ou", "sigma_hz", "tau_s"}: the truth
+    follows exact-discretization OU around its initial value and the
+    posterior gets the matching diffusion step before each update — same
+    order of operations as policy.VecRamseyEnv.step."""
     from .model import expected_counts
 
     post = DeltaPosterior(tuple(cfg["delta_range_hz"]),
@@ -134,18 +166,31 @@ def simulate_run(true_delta_hz, kind, cfg, rng):
     schedule = make_schedule(kind, cfg)
     t = cfg["timing"]
     n_b = cfg["n_shots_per_batch"]
+    drift = cfg.get("drift")
+    cur_delta, x = true_delta_hz, 0.0
     out = {"kind": kind, "wall_time_s": [], "sigma_hz": [],
            "abs_err_hz": [], "tau_s": []}
+    if drift:
+        out["true_delta_hz_t"] = []
     elapsed, step = 0.0, 0
     while elapsed < cfg["time_budget_s"]:
         tau = schedule(step, post)
-        lam = expected_counts([tau], true_delta_hz, cfg["t2star_s"],
+        dt = n_b * (t["t_init_s"] + tau + t["t_read_s"] + t["t_dead_s"])
+        if drift:
+            a = np.exp(-dt / drift["tau_s"])
+            x = x * a + drift["sigma_hz"] * np.sqrt(1 - a * a) \
+                * rng.standard_normal()
+            cur_delta = true_delta_hz + x
+            post.diffuse(drift["sigma_hz"] * np.sqrt(1 - a * a))
+        lam = expected_counts([tau], cur_delta, cfg["t2star_s"],
                               cfg["readout"], n_b)[0]
         post.update(rng.poisson(lam), tau, n_b)
-        elapsed += n_b * (t["t_init_s"] + tau + t["t_read_s"] + t["t_dead_s"])
+        elapsed += dt
         step += 1
         out["wall_time_s"].append(elapsed)
         out["sigma_hz"].append(post.sigma())
-        out["abs_err_hz"].append(abs(post.mean() - true_delta_hz))
+        out["abs_err_hz"].append(abs(post.mean() - cur_delta))
         out["tau_s"].append(tau)
+        if drift:
+            out["true_delta_hz_t"].append(cur_delta)
     return out

@@ -54,3 +54,41 @@ def test_collect_bc_dataset_labels_match_teacher_menu():
     # finding: the teacher opens at ~0.12 us to keep the fringe unambiguous)
     first = tau_candidates(CFG)[y[0]]
     assert first < 0.5e-6
+
+
+def test_rl_finetune_improves_return_from_random_init():
+    """Smoke: 15 PPO iterations on a shrunken env must improve mean episode
+    return from a random-init policy (machinery works end-to-end)."""
+    import torch
+    from nvsim.estimators.policy_net import finetune_rl
+    torch.manual_seed(0)
+    cfg = dict(CFG, time_budget_s=0.008)
+    n_act = len(tau_candidates(cfg))
+    env_probe = VecRamseyEnv(cfg, 1, np.random.default_rng(0), n_grid=200)
+    net = PolicyNet(env_probe.n_features, n_act)
+    pol = AmortizedPolicy(net, {"n_features": env_probe.n_features,
+                                "n_actions": n_act})
+    rl_cfg = {"n_envs": 32, "n_iters": 15, "lr": 3e-4, "clip": 0.2,
+              "entropy_coef": 0.01, "value_coef": 0.5, "update_epochs": 3,
+              "minibatch": 256, "n_grid": 200, "seed": 5}
+    hist = finetune_rl(pol, cfg, rl_cfg, np.random.default_rng(5))
+    early = np.mean(hist["mean_return"][:3])
+    late = np.mean(hist["mean_return"][-3:])
+    assert late > early
+
+
+def test_policy_schedule_kind_in_simulate_run(tmp_path):
+    from nvsim.estimators.adaptive import simulate_run
+    from nvsim.estimators.policy_net import PolicyNet
+    env = VecRamseyEnv(CFG, 1, np.random.default_rng(0))
+    n_act = len(tau_candidates(CFG))
+    pol = AmortizedPolicy(PolicyNet(env.n_features, n_act),
+                          {"n_features": env.n_features, "n_actions": n_act})
+    ckpt = tmp_path / "p.pt"
+    pol.save(ckpt)
+    cfg = dict(CFG, policy_ckpt=str(ckpt), time_budget_s=0.003)
+    out = simulate_run(2.0e6, "policy", cfg, np.random.default_rng(3))
+    cand = tau_candidates(CFG)
+    for tau in out["tau_s"]:
+        assert np.min(np.abs(cand - tau)) < 1e-15
+    assert out["sigma_hz"][-1] < out["sigma_hz"][0]

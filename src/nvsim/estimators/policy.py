@@ -143,38 +143,49 @@ class VecRamseyEnv:
     # -- features --
 
     def mode_mass_ratio(self):
-        return self._top2_modes()[0]
-
-    def _top2_modes(self):
-        p = self.p
-        peaks = np.zeros_like(p, dtype=bool)
-        peaks[:, 1:-1] = (p[:, 1:-1] > p[:, :-2]) & (p[:, 1:-1] > p[:, 2:])
-        v = np.where(peaks, p, 0.0)
-        i1 = v.argmax(axis=1)
-        rows = np.arange(self.n_envs)
-        v1 = v[rows, i1].copy()
-        v[rows, i1] = 0.0
-        i2 = v.argmax(axis=1)
-        v2 = v[rows, i2]
-        ratio = np.where(v1 > 0, v2 / np.maximum(v1, 1e-300), 0.0)
-        sep = np.abs(self.grid[i1] - self.grid[i2]) / self.span
-        sep = np.where(v2 > 0, sep, 0.0)
-        return ratio, sep
+        return _top2_modes(self.p, self.grid, self.span)[0]
 
     def features(self):
-        mu, sig = self._moments(self.p)
-        lo, _ = self.cfg["delta_range_hz"]
-        entropy = -(self.p * np.log(np.maximum(self.p, 1e-300))).sum(axis=1)
-        ratio, sep = self._top2_modes()
-        scalars = np.stack([
-            np.log10(np.maximum(sig, 1.0) / self.span),
-            (mu - lo) / self.span,
-            entropy / np.log(self.p.shape[1]),
-            self.elapsed_s / self.cfg["time_budget_s"],
-            ratio,
-            sep,
-        ], axis=1)
-        g = self.p.shape[1] // 32
-        pooled = self.p[:, : 32 * g].reshape(self.n_envs, 32, g).max(axis=2)
-        pooled = pooled / pooled.max(axis=1, keepdims=True)
-        return np.concatenate([scalars, pooled], axis=1)
+        return compute_features(self.p, self.grid, self.cfg,
+                                self.elapsed_s)
+
+
+def _top2_modes(p, grid, span):
+    peaks = np.zeros_like(p, dtype=bool)
+    peaks[:, 1:-1] = (p[:, 1:-1] > p[:, :-2]) & (p[:, 1:-1] > p[:, 2:])
+    v = np.where(peaks, p, 0.0)
+    i1 = v.argmax(axis=1)
+    rows = np.arange(p.shape[0])
+    v1 = v[rows, i1].copy()
+    v[rows, i1] = 0.0
+    i2 = v.argmax(axis=1)
+    v2 = v[rows, i2]
+    ratio = np.where(v1 > 0, v2 / np.maximum(v1, 1e-300), 0.0)
+    sep = np.abs(grid[i1] - grid[i2]) / span
+    sep = np.where(v2 > 0, sep, 0.0)
+    return ratio, sep
+
+
+def compute_features(p, grid, cfg, elapsed_s):
+    """Feature matrix (E, 38) from posterior rows (E, G) — the single
+    definition used by both the training env and evaluation-time schedules."""
+    p = np.atleast_2d(p)
+    elapsed_s = np.atleast_1d(np.asarray(elapsed_s, dtype=float))
+    lo, hi = cfg["delta_range_hz"]
+    span = hi - lo
+    mu = p @ grid
+    sig = np.sqrt((p * (grid[None, :] - mu[:, None]) ** 2).sum(axis=1))
+    entropy = -(p * np.log(np.maximum(p, 1e-300))).sum(axis=1)
+    ratio, sep = _top2_modes(p, grid, span)
+    scalars = np.stack([
+        np.log10(np.maximum(sig, 1.0) / span),
+        (mu - lo) / span,
+        entropy / np.log(p.shape[1]),
+        elapsed_s / cfg["time_budget_s"],
+        ratio,
+        sep,
+    ], axis=1)
+    g = p.shape[1] // 32
+    pooled = p[:, : 32 * g].reshape(p.shape[0], 32, g).max(axis=2)
+    pooled = pooled / pooled.max(axis=1, keepdims=True)
+    return np.concatenate([scalars, pooled], axis=1)
