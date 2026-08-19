@@ -1,0 +1,8 @@
+{"name": "phase3b_bc", "seed": 411,
+ "n_teacher_episodes": 400,
+ "epochs": 20, "lr": 1e-3,
+ "env": {"n_shots_per_batch": 250, "time_budget_s": 0.25,
+         "delta_range_hz": [0.3e6, 3.7e6], "t2star_s": 1.5e-6,
+         "tau_min_s": 0.05e-6, "tau_max_s": 4.5e-6,
+         "timing": {"t_init_s": 2.0e-6, "t_read_s": 0.4e-6, "t_dead_s": 1.0e-6},
+         "readout": {"r_hz": 6.0e7, "contrast": 0.25, "t_read_s": 0.4e-6, "f_pump": 0.95}}}
