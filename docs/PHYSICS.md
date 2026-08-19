@@ -154,6 +154,19 @@ Decision rule: minimize expected posterior variance (A-optimal), with the
 batch count distribution approximated as N(nλ, nλ) inside the lookahead only
 (valid for nλ ≳ 100); posterior updates stay exact-Poisson.
 
+## Drift-aware sequential posterior (Phase 3b)
+
+For runs with detuning drift, δ_true(t) = δ_base + x(t) with x an
+exact-discretization Ornstein–Uhlenbeck process (zero-mean, parameters
+σ_drift, τ_corr), stepped once per batch with that batch's actual duration
+dt. The posterior gets the matching prediction step before each likelihood
+update: convolution with the OU transition's diffusion kernel
+N(0, σ_drift²(1 − e^(−2dt/τ_corr))). The mean-reversion term is omitted in
+the prediction (δ_base is unknown to the estimator); at dt/τ_corr ≈ 2% per
+batch the omitted pull is negligible. Mass diffusing past the grid edges is
+clipped and renormalized. Truth process and posterior prediction use the
+same (σ_drift, τ_corr) — symmetric knowledge, as with T2*.
+
 ## Approximations ledger
 
 | Approximation | Where | Revisit when |
@@ -164,4 +177,5 @@ batch count distribution approximated as N(nλ, nλ) inside the lookahead only
 | Single NV orientation unless stated | most sims | ensemble/vector magnetometry |
 | Ideal (delta-function) MW pulses | pulsed sims | pulse durations comparable to 1/detunings or to T2* |
 | Two-level reduction of the driven transition | pulsed sims | Ω comparable to the 2γBz splitting, or degenerate transitions at B≈0 |
+| Diffusion-only OU prediction step (no reversion) | Phase 3b posterior | batch duration approaches τ_corr |
 | Drift frozen within a measurement point | experiment.py | drift correlation times approach the per-point duration |
